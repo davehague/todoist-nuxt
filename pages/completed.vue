@@ -5,58 +5,7 @@
       <h1 class="text-2xl font-bold">Completed Tasks</h1>
     </div>
 
-    <div v-if="showTokenInput" class="space-y-6">
-      <div class="space-y-6 text-center">
-        <div class="space-y-3">
-          <p class="text-lg text-gray-600 dark:text-gray-300">
-            To get started:
-          </p>
-          <ol
-            class="text-lg text-gray-600 dark:text-gray-300 list-decimal list-inside space-y-3"
-          >
-            <li>Go to Todoist Settings → Integrations → Developer</li>
-            <li>Copy your API token</li>
-            <li>Paste it below to load your tasks</li>
-          </ol>
-        </div>
-      </div>
-
-      <div class="space-y-2">
-        <input
-          v-model="apiToken"
-          type="password"
-          placeholder="Enter your Todoist API token"
-          class="w-full px-6 py-3 text-lg border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-        />
-        <button
-          @click="fetchCompletedTasks"
-          :disabled="isLoading"
-          class="w-full px-6 py-3 text-lg bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-        >
-          <svg
-            v-if="isLoading"
-            class="animate-spin h-5 w-5"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              class="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              stroke-width="4"
-              fill="none"
-            />
-            <path
-              class="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
-          {{ isLoading ? "Loading Tasks..." : "Load Tasks" }}
-        </button>
-      </div>
-    </div>
+    <TokenInput v-if="authStore.showTokenInput" :onLoad="loadCompletedTasks" />
 
     <div v-else>
       <div class="mb-6 flex justify-between items-center">
@@ -73,7 +22,7 @@
         </div>
       </div>
 
-      <div v-if="isLoading" class="text-gray-500 dark:text-gray-400">
+      <div v-if="taskStore.isLoading" class="text-gray-500 dark:text-gray-400">
         Loading tasks...
       </div>
 
@@ -113,22 +62,31 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { format, parseISO } from "date-fns";
 import { CheckCircleIcon } from "@heroicons/vue/24/outline";
-import { useTodoist } from "~/composables/useTodoist";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useTaskStore } from "@/stores/useTaskStore";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { useSectionStore } from "@/stores/useSectionStore";
+import TokenInput from "@/components/TokenInput.vue";
 import TaskList from "@/components/TaskList.vue";
 import TaskModal from "@/components/TaskModal.vue";
 import type { Task, CompletedTask } from "@/types/interfaces";
+
+const authStore = useAuthStore();
+const taskStore = useTaskStore();
+const projectStore = useProjectStore();
+const sectionStore = useSectionStore();
 
 const selectedDate = ref(new Date().toISOString().split("T")[0]);
 const error = ref<string | null>(null);
 const selectedTask = ref<Task | null>(null);
 
-const {
-  completedTasks,
-  isLoading,
-  apiToken,
-  showTokenInput,
-  fetchCompletedTasks,
-} = useTodoist();
+const loadCompletedTasks = async () => {
+  await Promise.all([
+    taskStore.fetchCompletedTasks(),
+    projectStore.fetchProjects(),
+    sectionStore.fetchSections(),
+  ]);
+};
 
 const mappedCompletedTasks = computed(() => {
   return filteredCompletedTasks.value.map(
@@ -136,12 +94,14 @@ const mappedCompletedTasks = computed(() => {
       id: task.task_id,
       content: task.content,
       project_id: task.project_id,
-      project_name: "", // This would need to be fetched separately
+      project_name: projectStore.getProjectName(task.project_id),
       section_id: task.section_id || "",
-      section_name: "", // This would need to be fetched separately
+      section_name: task.section_id
+        ? sectionStore.getSectionName(task.section_id)
+        : "",
       description: "",
       priority: 1,
-      created_at: "", // Not available in completed tasks
+      created_at: "",
       is_completed: true,
       completed_at: task.completed_at,
       labels: [],
@@ -151,7 +111,7 @@ const mappedCompletedTasks = computed(() => {
 });
 
 const filteredCompletedTasks = computed(() => {
-  return completedTasks.value.filter((task: CompletedTask) => {
+  return taskStore.completedTasks.filter((task: CompletedTask) => {
     if (!task.completed_at) return false;
 
     // Parse the selected date and get UTC boundaries
@@ -190,14 +150,34 @@ const filteredCompletedTasks = computed(() => {
 
 // Watch for date changes to refetch tasks if needed
 watch(selectedDate, () => {
-  if (completedTasks.value.length === 0 && apiToken.value) {
-    fetchCompletedTasks();
+  if (taskStore.completedTasks.length === 0 && authStore.apiToken) {
+    taskStore.fetchCompletedTasks();
   }
 });
 
+// Initialize on mount
 onMounted(async () => {
-  if (apiToken.value) {
-    await fetchCompletedTasks();
+  await authStore.loadToken();
+  if (authStore.apiToken) {
+    await Promise.all([
+      taskStore.fetchCompletedTasks(),
+      projectStore.fetchProjects(),
+      sectionStore.fetchSections(),
+    ]);
   }
 });
+
+// Watch for token changes
+watch(
+  () => authStore.apiToken,
+  async (newToken) => {
+    if (newToken) {
+      await Promise.all([
+        taskStore.fetchCompletedTasks(),
+        projectStore.fetchProjects(),
+        sectionStore.fetchSections(),
+      ]);
+    }
+  }
+);
 </script>

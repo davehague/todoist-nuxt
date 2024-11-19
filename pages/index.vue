@@ -1,71 +1,26 @@
 <template>
   <div class="p-4 md:p-12">
-    <div
-      v-if="!tasks.length || showTokenInput"
-      class="w-full max-w-6xl mx-auto space-y-6"
-    >
-      <div class="space-y-6 text-center">
-        <div class="space-y-3">
-          <p class="text-lg text-gray-600 dark:text-gray-300">
-            To get started:
-          </p>
-          <ol
-            class="text-lg text-gray-600 dark:text-gray-300 list-decimal list-inside space-y-3"
-          >
-            <li>Go to Todoist Settings → Integrations → Developer</li>
-            <li>Copy your API token</li>
-            <li>Paste it below to load your tasks</li>
-          </ol>
-        </div>
-      </div>
-
-      <div class="space-y-2">
-        <input
-          type="password"
-          v-model="apiToken"
-          placeholder="Enter your Todoist API token"
-          class="w-full px-6 py-3 text-lg border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-        />
-        <button
-          @click="fetchTasks"
-          :disabled="isLoading"
-          class="w-full px-6 py-3 text-lg bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-        >
-          <svg
-            v-if="isLoading"
-            class="animate-spin h-5 w-5"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              class="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              stroke-width="4"
-              fill="none"
-            />
-            <path
-              class="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
-          {{ isLoading ? "Loading Tasks..." : "Load Tasks" }}
-        </button>
-      </div>
-    </div>
+    <TokenInput
+      v-if="!taskStore.tasks.length || authStore.showTokenInput"
+      :onLoad="taskStore.fetchTasks"
+    />
 
     <div v-else class="w-full flex flex-col">
       <SearchBar
-        v-model="searchQuery"
-        :total-tasks="tasks.length"
-        @clear="clearSearch"
-        @copy="copyToClipboard"
+        v-model="taskStore.searchQuery"
+        :total-tasks="taskStore.tasks.length"
+        @clear="taskStore.clearSearch"
+        @copy="handleCopy"
       />
-      <FilterBar :tasks="tasks" @update:filters="updateFilters" />
+      <FilterBar
+        :tasks="taskStore.tasks"
+        @update:filters="taskStore.updateFilters"
+      />
 
-      <TaskList :tasks="sortedTasks" @select="selectedTask = $event" />
+      <TaskList
+        :tasks="taskStore.sortedTasks"
+        @select="selectedTask = $event"
+      />
       <TaskModal
         v-if="selectedTask"
         :task="selectedTask"
@@ -76,24 +31,38 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useTodoist } from "@/composables/useTodoist";
+import { ref, onMounted, watch } from "vue";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useTaskStore } from "@/stores/useTaskStore";
 import { type Task } from "@/types/interfaces";
+import SearchBar from "@/components/SearchBar.vue";
+import FilterBar from "@/components/FilterBar.vue";
+import TaskList from "@/components/TaskList.vue";
+import TaskModal from "@/components/TaskModal.vue";
 
-const {
-  tasks,
-  sortedTasks,
-  isLoading,
-  apiToken,
-  searchQuery,
-  showTokenInput,
-  fetchTasks,
-  clearSearch,
-  copyToClipboard,
-  updateFilters,
-} = useTodoist();
-
+const authStore = useAuthStore();
+const taskStore = useTaskStore();
 const selectedTask = ref<Task | null>(null);
+
+const handleCopy = async (event: MouseEvent) => {
+  await taskStore.copyToClipboard();
+};
+
+onMounted(async () => {
+  await authStore.loadToken();
+  if (authStore.apiToken) {
+    await taskStore.fetchTasks();
+  }
+});
+
+watch(
+  () => authStore.apiToken,
+  async (newToken) => {
+    if (newToken) {
+      await taskStore.fetchTasks();
+    }
+  }
+);
 </script>
 
 <style>
