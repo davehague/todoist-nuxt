@@ -1,75 +1,54 @@
-# Nuxt Minimal Starter
+# Todoist Task Viewer
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+A Nuxt + Vue.js application for viewing and managing Todoist tasks with a clean, responsive interface.
+
+## Features
+
+- View all Todoist tasks in a clean interface
+- Search tasks by content, project name, or due date
+- Sort tasks by creation date
+- Copy tasks to clipboard (All, Top 10/20/50)
+- View detailed task information in a modal
 
 ## Setup
 
-Make sure to install dependencies:
+1. Install dependencies:
 
 ```bash
-# npm
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
+2. Get your Todoist API token:
+   - Log into Todoist
+   - Go to Settings → Integrations → Developer
+   - Copy your API token
 
-Start the development server on `http://localhost:3000`:
+## Development
+
+Run the development server:
 
 ```bash
-# npm
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+## Dependencies
+- Nuxt 3
+- Vue 3
+- Headless UI
+- Heroicons
+- Marked (for Markdown rendering)
 
-Build the application for production:
 
-```bash
-# npm
-npm run build
+## Usage
 
-# pnpm
-pnpm build
+1. Launch the application
+2. Enter your Todoist API token
+3. Use the search bar to filter tasks
+4. Click any task to view details
+5. Use the Copy Tasks dropdown to export tasks
 
-# yarn
-yarn build
+## Security Notes
 
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+- API tokens are stored in memory only
+- No data is persisted locally
+- Use HTTPS in production
