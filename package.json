@@ -10,7 +10,6 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@doist/todoist-api-typescript": "^3.0.3",
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.1.5",
     "date-fns": "^4.1.0",

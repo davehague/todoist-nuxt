@@ -65,7 +65,7 @@
           v-model="selectedDate"
           class="px-4 py-2 border rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white"
         />
-        <div class="text-sm text-gray-600 dark:text-gray-300">
+        <div class="text-lg text-orange-500 dark:text-gray-300">
           {{ filteredCompletedTasks.length }} task{{
             filteredCompletedTasks.length !== 1 ? "s" : ""
           }}
@@ -95,7 +95,7 @@
 
         <TaskList
           v-else
-          :tasks="filteredCompletedTasks"
+          :tasks="mappedCompletedTasks"
           @select="selectedTask = $event"
         />
 
@@ -116,7 +116,7 @@ import { CheckCircleIcon } from "@heroicons/vue/24/outline";
 import { useTodoist } from "~/composables/useTodoist";
 import TaskList from "@/components/TaskList.vue";
 import TaskModal from "@/components/TaskModal.vue";
-import type { Task } from "@/types/interfaces";
+import type { Task, CompletedTask } from "@/types/interfaces";
 
 const selectedDate = ref(new Date().toISOString().split("T")[0]);
 const error = ref<string | null>(null);
@@ -130,8 +130,28 @@ const {
   fetchCompletedTasks,
 } = useTodoist();
 
+const mappedCompletedTasks = computed(() => {
+  return filteredCompletedTasks.value.map(
+    (task: CompletedTask): Task => ({
+      id: task.task_id,
+      content: task.content,
+      project_id: task.project_id,
+      project_name: "", // This would need to be fetched separately
+      section_id: task.section_id || "",
+      section_name: "", // This would need to be fetched separately
+      description: "",
+      priority: 1,
+      created_at: "", // Not available in completed tasks
+      is_completed: true,
+      completed_at: task.completed_at,
+      labels: [],
+      url: `https://todoist.com/app/task/${task.task_id}`,
+    })
+  );
+});
+
 const filteredCompletedTasks = computed(() => {
-  return completedTasks.value.filter((task) => {
+  return completedTasks.value.filter((task: CompletedTask) => {
     if (!task.completed_at) return false;
 
     // Parse the selected date and get UTC boundaries

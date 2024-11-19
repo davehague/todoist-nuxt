@@ -1,11 +1,16 @@
 // composables/useTodoist.ts
 import { ref, computed } from "vue";
-import type { Task, Project, Section, RawTask } from "~/types/interfaces";
-import { TodoistApi } from "@doist/todoist-api-typescript";
+import type {
+  Task,
+  Project,
+  Section,
+  RawTask,
+  CompletedTask,
+} from "~/types/interfaces";
 
 export const useTodoist = () => {
   const tasks = ref<Task[]>([]);
-  const completedTasks = ref<Task[]>([]);
+  const completedTasks = ref<CompletedTask[]>([]);
 
   const filteredTasks = ref<Task[]>([]);
   const isLoading = ref(false);

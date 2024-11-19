@@ -19,6 +19,23 @@ export interface Task {
   url: string;
 }
 
+export interface CompletedTask {
+  completed_at: string;
+  content: string;
+  id: string;
+  task_id: string;
+  project_id: string;
+  section_id: string | null;
+  v2_project_id: string;
+  v2_section_id: string | null;
+  v2_task_id: string;
+  user_id: string;
+  item_object: any | null;
+  meta_data: any | null;
+  note_count: number;
+  notes: any[];
+}
+
 export interface RawTask {
   id: string;
   content: string;
