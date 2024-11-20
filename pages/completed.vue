@@ -5,9 +5,7 @@
       <h1 class="text-2xl font-bold">Completed Tasks</h1>
     </div>
 
-    <TokenInput v-if="authStore.showTokenInput" :onLoad="loadCompletedTasks" />
-
-    <div v-else>
+    <div>
       <div class="mb-6 flex flex-col gap-4">
         <SearchBar
           v-model="searchQuery"
@@ -174,32 +172,16 @@ const handleCopy = async (event: MouseEvent, limit?: number) => {
 };
 
 watch(selectedDate, () => {
-  if (taskStore.completedTasks.length === 0 && authStore.apiToken) {
+  if (taskStore.completedTasks.length === 0) {
     taskStore.fetchCompletedTasks();
   }
 });
 
 onMounted(async () => {
-  await authStore.loadToken();
-  if (authStore.apiToken) {
-    await Promise.all([
-      taskStore.fetchCompletedTasks(),
-      projectStore.fetchProjects(),
-      sectionStore.fetchSections(),
-    ]);
-  }
+  await Promise.all([
+    taskStore.fetchCompletedTasks(),
+    projectStore.fetchProjects(),
+    sectionStore.fetchSections(),
+  ]);
 });
-
-watch(
-  () => authStore.apiToken,
-  async (newToken) => {
-    if (newToken) {
-      await Promise.all([
-        taskStore.fetchCompletedTasks(),
-        projectStore.fetchProjects(),
-        sectionStore.fetchSections(),
-      ]);
-    }
-  }
-);
 </script>

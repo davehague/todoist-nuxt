@@ -1,9 +1,24 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ["@nuxtjs/tailwindcss", "@pinia/nuxt"],
+  modules: ["@nuxtjs/tailwindcss", "@pinia/nuxt", '@pinia-plugin-persistedstate/nuxt'],
   compatibilityDate: "2024-04-03",
   typescript: {
     strict: true,
+  },
+  devServer: {
+    https: {
+      key: './localhost-key.pem',
+      cert: './localhost.pem',
+    }
+  },
+  runtimeConfig: {
+    // Private keys are only available on the server
+    // apiSecret: '123',
+
+    // Public keys that are exposed to the client
+    public: {
+      googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID
+    }
   },
   devtools: { enabled: true },
   experimental: {

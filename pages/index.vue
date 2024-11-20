@@ -1,11 +1,6 @@
 <template>
   <div class="p-4 md:p-12">
-    <TokenInput
-      v-if="!taskStore.tasks.length || authStore.showTokenInput"
-      :onLoad="taskStore.fetchTasks"
-    />
-
-    <div v-else class="w-full flex flex-col">
+    <div class="w-full flex flex-col">
       <SearchBar
         v-model="searchQuery"
         :total-tasks="taskStore.tasks.length"
@@ -67,18 +62,6 @@ const handleCopy = async (event: MouseEvent, limit?: number) => {
 };
 
 onMounted(async () => {
-  await authStore.loadToken();
-  if (authStore.apiToken) {
-    await taskStore.fetchTasks();
-  }
+  await taskStore.fetchTasks();
 });
-
-watch(
-  () => authStore.apiToken,
-  async (newToken) => {
-    if (newToken) {
-      await taskStore.fetchTasks();
-    }
-  }
-);
 </script>

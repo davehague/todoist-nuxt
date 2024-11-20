@@ -1,3 +1,23 @@
+// types/interfaces.ts
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  picture?: string;
+  created_at: Date;
+  updated_at: Date;
+  last_login: Date;
+}
+
+export interface UserToken {
+  user_id: number;
+  encrypted_token: string;
+  token_iv: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface Task {
   id: string;
   content: string;

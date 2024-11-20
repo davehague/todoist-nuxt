@@ -1,6 +1,5 @@
 // stores/useSectionStore.ts
 import { defineStore } from 'pinia';
-import { useAuthStore } from './useAuthStore';
 import type { Section } from '~/types/interfaces';
 
 interface SectionState {
@@ -22,14 +21,9 @@ export const useSectionStore = defineStore('sections', {
 
   actions: {
     async fetchSections() {
-      const authStore = useAuthStore();
-      if (!authStore.apiToken) return;
-
       this.isLoading = true;
       try {
-        this.sections = await $fetch<Section[]>('https://api.todoist.com/rest/v2/sections', {
-          headers: { Authorization: `Bearer ${authStore.apiToken}` },
-        });
+        this.sections = await $fetch<Section[]>('/api/todoist/sections');
       } catch (error) {
         console.error('Error fetching sections:', error);
         throw error;

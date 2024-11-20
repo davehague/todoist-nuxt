@@ -1,6 +1,5 @@
 // stores/useTaskStore.ts
 import { defineStore } from "pinia";
-import { useAuthStore } from "./useAuthStore";
 import { useProjectStore } from "./useProjectStore";
 import { useSectionStore } from "./useSectionStore";
 import type { Task, RawTask, CompletedTask } from "~/types/interfaces";
@@ -38,21 +37,16 @@ export const useTaskStore = defineStore("tasks", {
     sortedTasks: (state) => {
       let filtered = state.filteredTasks;
 
-      // Apply project and section filter
       if (state.filterSettings.projectSection) {
-        const [project, section] =
-          state.filterSettings.projectSection.split(" > ");
+        const [project, section] = state.filterSettings.projectSection.split(" > ");
         filtered = filtered.filter((task) => {
           if (section) {
-            return (
-              task.project_name === project && task.section_name === section
-            );
+            return task.project_name === project && task.section_name === section;
           }
           return task.project_name === project;
         });
       }
 
-      // Apply due date filter
       if (state.filterSettings.dueFilter !== "all") {
         const today = new Date().toISOString().split("T")[0];
         filtered = filtered.filter((task) => {
@@ -69,14 +63,12 @@ export const useTaskStore = defineStore("tasks", {
         });
       }
 
-      // Apply label filter
       if (state.filterSettings.label) {
         filtered = filtered.filter((task) =>
           task.labels?.includes(state.filterSettings.label)
         );
       }
 
-      // Apply sorting
       return [...filtered].sort((a, b) => {
         switch (state.filterSettings.sort) {
           case "due_asc":
@@ -100,26 +92,17 @@ export const useTaskStore = defineStore("tasks", {
 
   actions: {
     async fetchTasks() {
-      const authStore = useAuthStore();
       const projectStore = useProjectStore();
       const sectionStore = useSectionStore();
 
-      if (!authStore.apiToken) return;
-
       this.isLoading = true;
       try {
-        // Fetch all necessary data in parallel
         await Promise.all([
           projectStore.fetchProjects(),
           sectionStore.fetchSections(),
         ]);
 
-        const rawTasks = await $fetch<RawTask[]>(
-          "https://api.todoist.com/rest/v2/tasks",
-          {
-            headers: { Authorization: `Bearer ${authStore.apiToken}` },
-          }
-        );
+        const rawTasks = await $fetch<RawTask[]>('/api/todoist/tasks');
 
         this.tasks = rawTasks.map(
           (task): Task => ({
@@ -132,7 +115,6 @@ export const useTaskStore = defineStore("tasks", {
         this.filteredTasks = this.tasks;
       } catch (error) {
         console.error("Error fetching tasks:", error);
-        authStore.clearToken();
         throw error;
       } finally {
         this.isLoading = false;
@@ -140,29 +122,12 @@ export const useTaskStore = defineStore("tasks", {
     },
 
     async fetchCompletedTasks() {
-      const authStore = useAuthStore();
-      if (!authStore.apiToken) return;
-
       this.isLoading = true;
       try {
-        const response = await fetch(
-          "https://api.todoist.com/sync/v9/completed/get_all",
-          {
-            headers: {
-              Authorization: `Bearer ${authStore.apiToken}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        this.completedTasks = data.items;
+        const response = await $fetch<{ items: CompletedTask[] }>('/api/todoist/completed');
+        this.completedTasks = response.items;
       } catch (error) {
         console.error("Error fetching completed tasks:", error);
-        authStore.clearToken();
         throw error;
       } finally {
         this.isLoading = false;

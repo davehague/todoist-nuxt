@@ -1,6 +1,5 @@
 // stores/useProjectStore.ts
 import { defineStore } from 'pinia';
-import { useAuthStore } from './useAuthStore';
 import type { Project } from '~/types/interfaces';
 
 interface ProjectState {
@@ -22,14 +21,9 @@ export const useProjectStore = defineStore('projects', {
 
   actions: {
     async fetchProjects() {
-      const authStore = useAuthStore();
-      if (!authStore.apiToken) return;
-
       this.isLoading = true;
       try {
-        this.projects = await $fetch<Project[]>('https://api.todoist.com/rest/v2/projects', {
-          headers: { Authorization: `Bearer ${authStore.apiToken}` },
-        });
+        this.projects = await $fetch<Project[]>('/api/todoist/projects');
       } catch (error) {
         console.error('Error fetching projects:', error);
         throw error;
