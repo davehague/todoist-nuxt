@@ -1,0 +1,41 @@
+Completed Task Example
+
+{
+    "completed_at": "2024-11-20T12:33:39.000000Z",
+    "content": "State management in nuxt",
+    "id": "7830301284",
+    "item_object": null,
+    "meta_data": null,
+    "note_count": 0,
+    "notes": [],
+    "project_id": "2342835525",
+    "section_id": "172419521",
+    "task_id": "8605885582",
+    "user_id": "51387388",
+    "v2_project_id": "6WWvhF9F7HRgv3H9",
+    "v2_section_id": "6WWwpwC9gx7g26Fh",
+    "v2_task_id": "6Wgr4x366PPM6Gm9"
+}
+
+Active Tasks Example
+{
+    "id": "8549840884",
+    "assigner_id": null,
+    "assignee_id": null,
+    "project_id": "2342835525",
+    "section_id": "172419521",
+    "parent_id": null,
+    "order": 1,
+    "content": "[Akkermansia](https://pendulumlife.com/pages/akkermansia)",
+    "description": "",
+    "is_completed": false,
+    "labels": [],
+    "priority": 1,
+    "comment_count": 0,
+    "creator_id": "51387388",
+    "created_at": "2024-11-02T14:10:15.135537Z",
+    "due": null,
+    "url": "https://app.todoist.com/app/task/8549840884",
+    "duration": null,
+    "deadline": null
+}

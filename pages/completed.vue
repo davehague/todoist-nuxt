@@ -8,17 +8,26 @@
     <TokenInput v-if="authStore.showTokenInput" :onLoad="loadCompletedTasks" />
 
     <div v-else>
-      <div class="mb-6 flex justify-between items-center">
-        <input
-          type="date"
-          v-model="selectedDate"
-          class="px-4 py-2 border rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+      <div class="mb-6 flex flex-col gap-4">
+        <SearchBar
+          v-model="searchQuery"
+          :total-tasks="taskStore.completedTasks.length"
+          @clear="clearSearch"
+          @copy="handleCopy"
         />
-        <div class="text-lg text-orange-500 dark:text-gray-300">
-          {{ filteredCompletedTasks.length }} task{{
-            filteredCompletedTasks.length !== 1 ? "s" : ""
-          }}
-          completed
+
+        <div class="flex justify-between items-center">
+          <input
+            type="date"
+            v-model="selectedDate"
+            class="px-4 py-2 border rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+          />
+          <div class="text-lg text-orange-500 dark:text-gray-300">
+            {{ displayedTasks.length }} task{{
+              displayedTasks.length !== 1 ? "s" : ""
+            }}
+            completed
+          </div>
         </div>
       </div>
 
@@ -35,16 +44,15 @@
 
       <div v-else>
         <div
-          v-if="filteredCompletedTasks.length === 0"
+          v-if="displayedTasks.length === 0"
           class="text-gray-500 dark:text-gray-400 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
         >
-          No tasks completed on
-          {{ format(new Date(selectedDate), "MMMM d, yyyy") }}
+          No tasks found
         </div>
 
         <TaskList
           v-else
-          :tasks="mappedCompletedTasks"
+          :tasks="displayedTasks"
           @select="selectedTask = $event"
         />
 
@@ -66,9 +74,11 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { useTaskStore } from "@/stores/useTaskStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useSectionStore } from "@/stores/useSectionStore";
+import { copyTasksToClipboard } from "@/utils/copyTasks";
 import TokenInput from "@/components/TokenInput.vue";
 import TaskList from "@/components/TaskList.vue";
 import TaskModal from "@/components/TaskModal.vue";
+import SearchBar from "@/components/SearchBar.vue";
 import type { Task, CompletedTask } from "@/types/interfaces";
 
 const authStore = useAuthStore();
@@ -79,6 +89,7 @@ const sectionStore = useSectionStore();
 const selectedDate = ref(new Date().toISOString().split("T")[0]);
 const error = ref<string | null>(null);
 const selectedTask = ref<Task | null>(null);
+const searchQuery = ref("");
 
 const loadCompletedTasks = async () => {
   await Promise.all([
@@ -87,6 +98,38 @@ const loadCompletedTasks = async () => {
     sectionStore.fetchSections(),
   ]);
 };
+
+const filteredCompletedTasks = computed(() => {
+  return taskStore.completedTasks.filter((task: CompletedTask) => {
+    if (!task.completed_at) return false;
+
+    const localDate = parseISO(selectedDate.value);
+    const utcDate = new Date(
+      Date.UTC(
+        localDate.getFullYear(),
+        localDate.getMonth(),
+        localDate.getDate(),
+        0,
+        0,
+        0,
+        0
+      )
+    );
+    const utcEndDate = new Date(
+      Date.UTC(
+        localDate.getFullYear(),
+        localDate.getMonth(),
+        localDate.getDate(),
+        23,
+        59,
+        59,
+        999
+      )
+    );
+    const taskCompletionDate = new Date(task.completed_at);
+    return taskCompletionDate >= utcDate && taskCompletionDate <= utcEndDate;
+  });
+});
 
 const mappedCompletedTasks = computed(() => {
   return filteredCompletedTasks.value.map(
@@ -110,52 +153,32 @@ const mappedCompletedTasks = computed(() => {
   );
 });
 
-const filteredCompletedTasks = computed(() => {
-  return taskStore.completedTasks.filter((task: CompletedTask) => {
-    if (!task.completed_at) return false;
+const displayedTasks = computed(() => {
+  const query = searchQuery.value.toLowerCase();
+  if (!query) return mappedCompletedTasks.value;
 
-    // Parse the selected date and get UTC boundaries
-    const localDate = parseISO(selectedDate.value);
-    const utcDate = new Date(
-      Date.UTC(
-        localDate.getFullYear(),
-        localDate.getMonth(),
-        localDate.getDate(),
-        0,
-        0,
-        0,
-        0
-      )
-    );
-
-    const utcEndDate = new Date(
-      Date.UTC(
-        localDate.getFullYear(),
-        localDate.getMonth(),
-        localDate.getDate(),
-        23,
-        59,
-        59,
-        999
-      )
-    );
-
-    // Parse the task completion date (already in UTC since it ends with Z)
-    const taskCompletionDate = new Date(task.completed_at);
-
-    // Compare in UTC
-    return taskCompletionDate >= utcDate && taskCompletionDate <= utcEndDate;
-  });
+  return mappedCompletedTasks.value.filter(
+    (task) =>
+      task.content.toLowerCase().includes(query) ||
+      task.project_name.toLowerCase().includes(query) ||
+      (task.section_name?.toLowerCase().includes(query) ?? false)
+  );
 });
 
-// Watch for date changes to refetch tasks if needed
+const clearSearch = () => {
+  searchQuery.value = "";
+};
+
+const handleCopy = async (event: MouseEvent, limit?: number) => {
+  await copyTasksToClipboard(displayedTasks.value, limit);
+};
+
 watch(selectedDate, () => {
   if (taskStore.completedTasks.length === 0 && authStore.apiToken) {
     taskStore.fetchCompletedTasks();
   }
 });
 
-// Initialize on mount
 onMounted(async () => {
   await authStore.loadToken();
   if (authStore.apiToken) {
@@ -167,7 +190,6 @@ onMounted(async () => {
   }
 });
 
-// Watch for token changes
 watch(
   () => authStore.apiToken,
   async (newToken) => {

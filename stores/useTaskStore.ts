@@ -188,26 +188,5 @@ export const useTaskStore = defineStore("tasks", {
       this.searchQuery = "";
       this.filteredTasks = this.tasks;
     },
-
-    async copyToClipboard(limit?: number) {
-      const tasksToCopy = limit
-        ? this.filteredTasks.slice(0, limit)
-        : this.filteredTasks;
-      const text = tasksToCopy
-        .map((task: Task) => {
-          const dueStr = task.due ? task.due.date : "No due date";
-          const createdStr = task.created_at
-            ? new Date(task.created_at).toLocaleDateString()
-            : "Unknown";
-          return `${task.content} | Created: ${createdStr} |  Due: ${dueStr}`;
-        })
-        .join("\n");
-
-      try {
-        await navigator.clipboard.writeText(text);
-      } catch (error) {
-        console.error("Failed to copy:", error);
-      }
-    },
   },
 });

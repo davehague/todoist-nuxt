@@ -7,9 +7,9 @@
 
     <div v-else class="w-full flex flex-col">
       <SearchBar
-        v-model="taskStore.searchQuery"
+        v-model="searchQuery"
         :total-tasks="taskStore.tasks.length"
-        @clear="taskStore.clearSearch"
+        @clear="clearSearch"
         @copy="handleCopy"
       />
       <FilterBar
@@ -31,21 +31,39 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useTaskStore } from "@/stores/useTaskStore";
+import { copyTasksToClipboard } from "@/utils/copyTasks";
 import { type Task } from "@/types/interfaces";
-import SearchBar from "@/components/SearchBar.vue";
-import FilterBar from "@/components/FilterBar.vue";
-import TaskList from "@/components/TaskList.vue";
-import TaskModal from "@/components/TaskModal.vue";
 
 const authStore = useAuthStore();
 const taskStore = useTaskStore();
 const selectedTask = ref<Task | null>(null);
+const searchQuery = ref("");
 
-const handleCopy = async (event: MouseEvent) => {
-  await taskStore.copyToClipboard();
+// Update filteredTasks when search query changes
+watch(searchQuery, (query) => {
+  if (!query) {
+    taskStore.filteredTasks = taskStore.tasks;
+  } else {
+    taskStore.filteredTasks = taskStore.tasks.filter(
+      (task) =>
+        task.content.toLowerCase().includes(query.toLowerCase()) ||
+        task.project_name.toLowerCase().includes(query.toLowerCase()) ||
+        (task.section_name?.toLowerCase().includes(query.toLowerCase()) ??
+          false) ||
+        (task.due?.date || "").includes(query.toLowerCase())
+    );
+  }
+});
+
+const clearSearch = () => {
+  searchQuery.value = "";
+};
+
+const handleCopy = async (event: MouseEvent, limit?: number) => {
+  await copyTasksToClipboard(taskStore.sortedTasks, limit);
 };
 
 onMounted(async () => {
@@ -64,21 +82,3 @@ watch(
   }
 );
 </script>
-
-<style>
-.markdown {
-  color: rgb(17, 24, 39);
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-.markdown a {
-  color: rgb(37, 99, 235);
-}
-.markdown a:hover {
-  text-decoration: underline;
-}
-.markdown p {
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
-}
-</style>
