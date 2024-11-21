@@ -178,10 +178,15 @@ watch(selectedDate, () => {
 });
 
 onMounted(async () => {
-  await Promise.all([
-    taskStore.fetchCompletedTasks(),
-    projectStore.fetchProjects(),
-    sectionStore.fetchSections(),
-  ])
+  if (!sectionStore.isLoaded) {
+    await sectionStore.fetchSections();
+  }
+  if (!projectStore.isLoaded) {
+    await projectStore.fetchProjects();
+  }
+  if (!taskStore.isLoaded) {
+    await taskStore.fetchTasks();
+  }
+  await taskStore.fetchCompletedTasks();
 });
 </script>

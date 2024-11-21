@@ -6,17 +6,19 @@ import { useApiHeaders } from '@/composables/useApiHeaders'
 interface SectionState {
   sections: Section[];
   isLoading: boolean;
+  isLoaded: boolean;
 }
 
 export const useSectionStore = defineStore('sections', {
   state: (): SectionState => ({
     sections: [],
     isLoading: false,
+    isLoaded: false,
   }),
 
   getters: {
     getSectionName: (state) => (id: string) => {
-      return state.sections.find(s => s.id === id)?.name || 'No Section';
+      return state.sections.find(s => s.id === id)?.name || undefined;
     },
   },
 
@@ -35,6 +37,7 @@ export const useSectionStore = defineStore('sections', {
         console.error('Error fetching sections:', error);
       } finally {
         this.isLoading = false;
+        this.isLoaded = true;
       }
     }
   }

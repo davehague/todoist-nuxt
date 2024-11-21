@@ -62,7 +62,8 @@ onMounted(async () => {
   console.log("Profile mounted");
   console.log("AuthStore state:", {
     user: authStore.user,
-    isAuthenticated: authStore.isAuthenticated
+    isAuthenticated: authStore.isAuthenticated,
+    token: authStore.todoistToken 
   });
 });
 </script>

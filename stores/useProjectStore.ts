@@ -6,12 +6,14 @@ import { useApiHeaders } from '@/composables/useApiHeaders'
 interface ProjectState {
   projects: Project[];
   isLoading: boolean;
+  isLoaded: boolean;
 }
 
 export const useProjectStore = defineStore('projects', {
   state: (): ProjectState => ({
     projects: [],
     isLoading: false,
+    isLoaded: false,
   }),
 
   getters: {
@@ -35,6 +37,7 @@ export const useProjectStore = defineStore('projects', {
         console.error('Error fetching projects:', error)
       } finally {
         this.isLoading = false
+        this.isLoaded = true;
       }
     }
   }

@@ -25,7 +25,7 @@ export interface Task {
   project_name: string;
   project_id: string;
   section_id: string;
-  section_name: string;
+  section_name?: string;
   due?: {
     date: string;
     is_recurring: boolean;

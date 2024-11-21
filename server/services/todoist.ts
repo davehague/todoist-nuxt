@@ -13,7 +13,7 @@ export class TodoistService {
     }
 
     await requireUserSession(event);
-    const userId = getHeader(event, 'x-user-id');
+    const userId = getHeader(event, "x-user-id");
     if (!userId) {
       throw createError({
         statusCode: 401,
@@ -27,7 +27,12 @@ export class TodoistService {
       .eq("user_id", userId)
       .single();
 
-    if (error || !userToken?.encrypted_token || !userToken?.token_iv || !userToken?.encryption_key) {
+    if (
+      error ||
+      !userToken?.encrypted_token ||
+      !userToken?.token_iv ||
+      !userToken?.encryption_key
+    ) {
       throw createError({
         statusCode: 401,
         message: "No valid Todoist token found",
@@ -38,10 +43,11 @@ export class TodoistService {
       const decryptedToken = await decryptToken(
         {
           encrypted_token: userToken.encrypted_token,
-          token_iv: userToken.token_iv
+          token_iv: userToken.token_iv,
         },
         userToken.encryption_key
       );
+
       if (!decryptedToken) {
         throw new Error("Failed to decrypt token");
       }
@@ -79,11 +85,13 @@ export class TodoistService {
         });
       }
 
-      return response.json();
+      const responseData = await response.json();
+      return responseData;
     } catch (error: any) {
+      console.error("Todoist API error:", error);
       throw createError({
         statusCode: error.statusCode || 500,
-        message: error.message || 'Failed to make Todoist API request',
+        message: error.message || "Failed to make Todoist API request",
       });
     }
   }

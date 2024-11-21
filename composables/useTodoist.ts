@@ -226,7 +226,7 @@ export const useTodoist = () => {
         (task): Task => ({
           ...task,
           project_name: projectMap[task.project_id] || "No Project",
-          section_name: sectionMap[task.section_id] || "No Section",
+          section_name: sectionMap[task.section_id] || undefined,
         })
       );
 

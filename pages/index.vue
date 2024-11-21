@@ -26,31 +26,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
-import { useAuthStore } from "@/stores/useAuthStore";
+import { ref, onMounted, watch } from "vue";
 import { useTaskStore } from "@/stores/useTaskStore";
 import { copyTasksToClipboard } from "@/utils/copyTasks";
 import { type Task } from "@/types/interfaces";
+import { useSectionStore } from "@/stores/useSectionStore";
+import { useProjectStore } from "@/stores/useProjectStore";
 
-const authStore = useAuthStore();
 const taskStore = useTaskStore();
 const selectedTask = ref<Task | null>(null);
 const searchQuery = ref("");
+const sectionStore = useSectionStore();
+const projectStore = useProjectStore();
 
 // Update filteredTasks when search query changes
 watch(searchQuery, (query) => {
-  if (!query) {
-    taskStore.filteredTasks = taskStore.tasks;
-  } else {
-    taskStore.filteredTasks = taskStore.tasks.filter(
-      (task) =>
-        task.content.toLowerCase().includes(query.toLowerCase()) ||
-        task.project_name.toLowerCase().includes(query.toLowerCase()) ||
-        (task.section_name?.toLowerCase().includes(query.toLowerCase()) ??
-          false) ||
-        (task.due?.date || "").includes(query.toLowerCase())
-    );
-  }
+  taskStore.searchQuery = query;
+  taskStore.handleSearch();
 });
 
 const clearSearch = () => {
@@ -62,6 +54,12 @@ const handleCopy = async (event: MouseEvent, limit?: number) => {
 };
 
 onMounted(async () => {
-  await taskStore.fetchTasks()
+  if (!sectionStore.isLoaded) {
+    await sectionStore.fetchSections();
+  }
+  if (!projectStore.isLoaded) {
+    await projectStore.fetchProjects();
+  }
+  await taskStore.fetchTasks();
 });
 </script>
