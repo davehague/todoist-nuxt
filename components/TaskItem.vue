@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 import type { Task } from "../types/interfaces";
-import { renderMarkdown } from '../utils/markdown';
+import { renderMarkdown } from "../utils/markdown";
 
 defineProps<{
   task: Task;

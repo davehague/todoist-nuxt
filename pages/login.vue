@@ -14,6 +14,12 @@
         <p class="mb-6 text-center text-gray-600 dark:text-gray-300">
           Sign in to access your account
         </p>
+        <div
+          v-if="errorMessage"
+          class="mb-4 p-3 text-red-700 bg-red-100 dark:bg-red-900 dark:text-red-100 rounded"
+        >
+          {{ errorMessage }}
+        </div>
         <div class="flex justify-center">
           <GoogleLogin
             :callback="handleLoginSuccess"
@@ -35,6 +41,7 @@ import { useRouter } from "#app";
 import PersistentDataService from "@/services/PersistentDataService";
 import { type CallbackTypes } from "vue3-google-login";
 import { decryptToken } from "@/utils/encryption";
+import { ref } from "vue";
 
 const config = useRuntimeConfig();
 
@@ -56,6 +63,8 @@ const decodeJWT = (token: string): GoogleJWTPayload => {
     throw new Error("Failed to decode JWT token");
   }
 };
+
+const errorMessage = ref("");
 
 const handleLoginSuccess = async (
   response: CallbackTypes.CredentialPopupResponse
@@ -110,22 +119,17 @@ const handleLoginSuccess = async (
 };
 
 const handleLoginError = (error: unknown) => {
-  // Here you could integrate with your preferred notification system
   console.error("Google login error:", error);
-  // Example: useToast().error('Failed to log in. Please try again.')
+  errorMessage.value = "Failed to log in. Please try again.";
+  setTimeout(() => {
+    errorMessage.value = "";
+  }, 5000);
 };
 
-// Handle cleanup when user logs out
 const handleLogout = () => {
-  try {
-    const { googleLogout } = require("vue3-google-login");
-    googleLogout();
-  } catch (error) {
-    console.error("Logout error:", error);
-  }
+  authStore.logout();
 };
 
-// Expose logout handler for other components
 defineExpose({
   handleLogout,
 });

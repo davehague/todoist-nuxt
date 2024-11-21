@@ -1,7 +1,6 @@
 <template>
   <div class="py-4 z-10 w-full border-b dark:border-gray-700">
     <div class="flex flex-wrap gap-2 w-full mx-auto">
-
       <!-- Search bar -->
       <div class="relative flex-1 w-full md:w-auto">
         <MagnifyingGlassIcon
@@ -41,6 +40,7 @@
         </button>
       </div>
 
+      <!-- Copy button -->
       <div class="flex gap-2 w-full md:w-auto">
         <div class="relative">
           <button

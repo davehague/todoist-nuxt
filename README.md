@@ -32,12 +32,12 @@ npm run dev
 ```
 
 ## Dependencies
+- Supabase
 - Nuxt 3
 - Vue 3
 - Headless UI
 - Heroicons
 - Marked (for Markdown rendering)
-
 
 ## Usage
 
@@ -48,7 +48,5 @@ npm run dev
 5. Use the Copy Tasks dropdown to export tasks
 
 ## Security Notes
-
-- API tokens are stored in memory only
-- No data is persisted locally
+- Todoist Bearer tokens are stored encrypted at rest
 - Use HTTPS in production

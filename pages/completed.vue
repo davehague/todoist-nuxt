@@ -2,7 +2,9 @@
   <div class="p-4 md:p-12">
     <div class="flex items-center justify-start gap-2 mb-6">
       <CheckCircleIcon class="h-6 w-6 text-gray-900 dark:text-gray-100" />
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">Completed Tasks</h1>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+        Completed Tasks
+      </h1>
     </div>
     <div>
       <div class="mb-6 flex flex-col gap-4">
@@ -67,7 +69,6 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { parseISO } from "date-fns";
 import { CheckCircleIcon } from "@heroicons/vue/24/outline";
-import { useAuthStore } from "@/stores/useAuthStore";
 import { useTaskStore } from "@/stores/useTaskStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useSectionStore } from "@/stores/useSectionStore";
@@ -77,7 +78,6 @@ import TaskModal from "@/components/TaskModal.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import type { Task, CompletedTask } from "@/types/interfaces";
 
-const authStore = useAuthStore();
 const taskStore = useTaskStore();
 const projectStore = useProjectStore();
 const sectionStore = useSectionStore();
@@ -86,14 +86,6 @@ const selectedDate = ref(new Date().toISOString().split("T")[0]);
 const error = ref<string | null>(null);
 const selectedTask = ref<Task | null>(null);
 const searchQuery = ref("");
-
-const loadCompletedTasks = async () => {
-  await Promise.all([
-    taskStore.fetchCompletedTasks(),
-    projectStore.fetchProjects(),
-    sectionStore.fetchSections(),
-  ]);
-};
 
 const filteredCompletedTasks = computed(() => {
   return taskStore.completedTasks.filter((task: CompletedTask) => {

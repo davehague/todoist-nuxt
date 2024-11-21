@@ -3,15 +3,14 @@ export interface EncryptedTokenData {
   token_iv: string;
 }
 
-export async function importEncryptionKey(keyString: string): Promise<CryptoKey> {
-  const keyData = Uint8Array.from(keyString.split(',').map(Number));
-  return await crypto.subtle.importKey(
-    "raw",
-    keyData,
-    "AES-GCM",
-    true,
-    ["encrypt", "decrypt"]
-  );
+export async function importEncryptionKey(
+  keyString: string
+): Promise<CryptoKey> {
+  const keyData = Uint8Array.from(keyString.split(",").map(Number));
+  return await crypto.subtle.importKey("raw", keyData, "AES-GCM", true, [
+    "encrypt",
+    "decrypt",
+  ]);
 }
 
 export async function generateNewEncryptionKey(): Promise<string> {
@@ -24,7 +23,10 @@ export async function generateNewEncryptionKey(): Promise<string> {
   return Array.from(new Uint8Array(exportedKey)).join(",");
 }
 
-export async function encryptToken(token: string, encryptionKey: string): Promise<EncryptedTokenData> {
+export async function encryptToken(
+  token: string,
+  encryptionKey: string
+): Promise<EncryptedTokenData> {
   const key = await importEncryptionKey(encryptionKey);
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encodedToken = new TextEncoder().encode(token);
@@ -34,8 +36,10 @@ export async function encryptToken(token: string, encryptionKey: string): Promis
     encodedToken
   );
   return {
-    encrypted_token: btoa(String.fromCharCode(...new Uint8Array(encryptedToken))),
-    token_iv: btoa(String.fromCharCode(...iv))
+    encrypted_token: btoa(
+      String.fromCharCode(...new Uint8Array(encryptedToken))
+    ),
+    token_iv: btoa(String.fromCharCode(...iv)),
   };
 }
 

@@ -7,9 +7,17 @@
       @change="emitFilters"
     >
       <option value="">All Projects</option>
-      <optgroup v-for="project in projectsWithSections" :key="project.name" :label="project.name">
+      <optgroup
+        v-for="project in projectsWithSections"
+        :key="project.name"
+        :label="project.name"
+      >
         <option :value="project.name">{{ project.name }}</option>
-        <option v-for="section in project.sections" :key="section" :value="`${project.name} > ${section}`">
+        <option
+          v-for="section in project.sections"
+          :key="section"
+          :value="`${project.name} > ${section}`"
+        >
           {{ project.name }} > {{ section }}
         </option>
       </optgroup>
@@ -64,39 +72,42 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import type { Task } from '../types/interfaces';
+import { ref, computed } from "vue";
+import type { Task } from "../types/interfaces";
 
 const props = defineProps<{
   tasks: Task[];
 }>();
 
-const selectedDueFilter = ref('all');
-const selectedLabel = ref('');
-const selectedSort = ref('created_desc');
-const selectedProjectSection = ref('');
+const selectedDueFilter = ref("all");
+const selectedLabel = ref("");
+const selectedSort = ref("created_desc");
+const selectedProjectSection = ref("");
 
 const emit = defineEmits<{
-  (e: 'update:filters', filters: {
-    dueFilter: string;
-    label: string;
-    sort: string;
-    projectSection: string;
-  }): void;
+  (
+    e: "update:filters",
+    filters: {
+      dueFilter: string;
+      label: string;
+      sort: string;
+      projectSection: string;
+    }
+  ): void;
 }>();
 
 const uniqueLabels = computed(() => {
   const labels = new Set<string>();
-  props.tasks.forEach(task => {
-    task.labels?.forEach(label => labels.add(label));
+  props.tasks.forEach((task) => {
+    task.labels?.forEach((label) => labels.add(label));
   });
   return Array.from(labels).sort();
 });
 
 const projectsWithSections = computed(() => {
   const projectMap = new Map<string, Set<string>>();
-  
-  props.tasks.forEach(task => {
+
+  props.tasks.forEach((task) => {
     if (!projectMap.has(task.project_name)) {
       projectMap.set(task.project_name, new Set());
     }
@@ -105,26 +116,28 @@ const projectsWithSections = computed(() => {
     }
   });
 
-  return Array.from(projectMap.entries()).map(([name, sections]) => ({
-    name,
-    sections: Array.from(sections).sort()
-  })).sort((a, b) => a.name.localeCompare(b.name));
+  return Array.from(projectMap.entries())
+    .map(([name, sections]) => ({
+      name,
+      sections: Array.from(sections).sort(),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 });
 
 const emitFilters = () => {
-  emit('update:filters', {
+  emit("update:filters", {
     dueFilter: selectedDueFilter.value,
     label: selectedLabel.value,
     sort: selectedSort.value,
-    projectSection: selectedProjectSection.value
+    projectSection: selectedProjectSection.value,
   });
 };
 
 const resetFilters = () => {
-  selectedDueFilter.value = 'all';
-  selectedLabel.value = '';
-  selectedSort.value = 'created_desc';
-  selectedProjectSection.value = '';
+  selectedDueFilter.value = "all";
+  selectedLabel.value = "";
+  selectedSort.value = "created_desc";
+  selectedProjectSection.value = "";
   emitFilters();
 };
 </script>

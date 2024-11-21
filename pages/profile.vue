@@ -1,19 +1,20 @@
 <template>
   <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg p-8">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8 text-center">Todoist Token</h1>
+      <h1
+        class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8 text-center"
+      >
+        Todoist Token
+      </h1>
       <form @submit.prevent="saveToken" class="space-y-6">
-        <TokenInput 
-          v-model="token" 
-          class="w-full" 
-        />
-        <button 
+        <TokenInput v-model="token" class="w-full" />
+        <button
           type="submit"
           class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Save Token
         </button>
-        <button 
+        <button
           type="button"
           @click="clearToken"
           class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
@@ -46,23 +47,15 @@ async function saveToken() {
       return;
     }
 
-    // Generate a new encryption key
     const encryptionKey = await generateNewEncryptionKey();
-    
-    // Encrypt the token with the new key
     const encryptedTokenData = await encryptToken(token.value, encryptionKey);
-    
-    // Save both the encrypted token and the encryption key
-    await PersistentDataService.saveUserToken(
-      authStore.user.id,
-      {
-        ...encryptedTokenData,
-        encryption_key: encryptionKey
-      }
-    );
+    await PersistentDataService.saveUserToken(authStore.user.id, {
+      ...encryptedTokenData,
+      encryption_key: encryptionKey,
+    });
 
     authStore.setTodoistToken(token.value);
-    await useRouter().push('/');
+    await useRouter().push("/");
   } catch (error) {
     console.error("Error saving token:", error);
     alert("Failed to save token. Please try again.");
@@ -75,15 +68,10 @@ function clearToken() {
 }
 
 onMounted(async () => {
-  console.log("Profile mounted");
-  console.log("AuthStore state:", {
-    user: authStore.user,
-    isAuthenticated: authStore.isAuthenticated,
-    token: authStore.todoistToken 
-  });
-
   if (authStore.user) {
-    const userTokenData = await PersistentDataService.getUserToken(authStore.user.id);
+    const userTokenData = await PersistentDataService.getUserToken(
+      authStore.user.id
+    );
     if (userTokenData) {
       const decryptedToken = await decryptToken(
         {

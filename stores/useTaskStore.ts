@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 import { useProjectStore } from "./useProjectStore";
 import { useSectionStore } from "./useSectionStore";
 import type { Task, RawTask, CompletedTask } from "~/types/interfaces";
-import { useApiHeaders } from '@/composables/useApiHeaders'
+import { useApiHeaders } from "@/composables/useApiHeaders";
 
 interface TaskState {
   tasks: Task[];
@@ -41,10 +41,13 @@ export const useTaskStore = defineStore("tasks", {
       let filtered = state.filteredTasks;
 
       if (state.filterSettings.projectSection) {
-        const [project, section] = state.filterSettings.projectSection.split(" > ");
+        const [project, section] =
+          state.filterSettings.projectSection.split(" > ");
         filtered = filtered.filter((task) => {
           if (section) {
-            return task.project_name === project && task.section_name === section;
+            return (
+              task.project_name === project && task.section_name === section
+            );
           }
           return task.project_name === project;
         });
@@ -108,14 +111,14 @@ export const useTaskStore = defineStore("tasks", {
 
       try {
         this.isLoading = true;
-        const response = await fetch('/api/todoist/tasks', {
-          method: 'GET',
-          headers: headers as HeadersInit
+        const response = await fetch("/api/todoist/tasks", {
+          method: "GET",
+          headers: headers as HeadersInit,
         });
-        if (!response.ok) throw new Error('Failed to fetch tasks');
-        const rawTasks = await response.json() as RawTask[];
+        if (!response.ok) throw new Error("Failed to fetch tasks");
+        const rawTasks = (await response.json()) as RawTask[];
 
-        this.tasks = rawTasks.map(task => ({
+        this.tasks = rawTasks.map((task) => ({
           ...task,
           project_name: projectStore.getProjectName(task.project_id),
           section_name: sectionStore.getSectionName(task.section_id),
@@ -123,7 +126,7 @@ export const useTaskStore = defineStore("tasks", {
         this.filteredTasks = this.tasks; // Initialize filtered tasks with all tasks
         this.searchQuery = ""; // Reset search query
       } catch (error) {
-        console.error('Error fetching tasks:', error);
+        console.error("Error fetching tasks:", error);
       } finally {
         this.isLoading = false;
         this.isLoaded = true;
@@ -131,20 +134,20 @@ export const useTaskStore = defineStore("tasks", {
     },
 
     async fetchCompletedTasks() {
-      const { headers } = useApiHeaders()
+      const { headers } = useApiHeaders();
       try {
-        this.isLoading = true
-        const response = await fetch('/api/todoist/completed', {
-          method: 'GET',
-          headers: headers as HeadersInit
-        })
-        if (!response.ok) throw new Error('Failed to fetch completed tasks')
-        const data = await response.json()
-        this.completedTasks = data.items || []
+        this.isLoading = true;
+        const response = await fetch("/api/todoist/completed", {
+          method: "GET",
+          headers: headers as HeadersInit,
+        });
+        if (!response.ok) throw new Error("Failed to fetch completed tasks");
+        const data = await response.json();
+        this.completedTasks = data.items || [];
       } catch (error) {
-        console.error('Error fetching completed tasks:', error)
+        console.error("Error fetching completed tasks:", error);
       } finally {
-        this.isLoading = false
+        this.isLoading = false;
       }
     },
 

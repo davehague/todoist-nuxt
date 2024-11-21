@@ -2,32 +2,6 @@ import { supabase } from "@/utils/supabaseClient";
 import { type User } from "@/types/interfaces";
 
 export default class PersistentDataService {
-  // ============= GENERAL ============= //
-  static async multiRecordFetch(tableName: string) {
-    console.log("Getting multiple records from", tableName);
-    const query = supabase.from(tableName).select("*");
-    const { data, error } = (await query) as { data: User[]; error: any };
-    if (error) {
-      console.error(`Error fetching ${tableName}:`, error);
-      throw error;
-    }
-
-    return data;
-  }
-
-  static async singleRecordFetch(tableName: string, recordId: string) {
-    const query = supabase.from(tableName).select("*").eq("id", recordId);
-    const { data, error } = (await query) as { data: User[]; error: any };
-
-    if (error) {
-      console.error(`Error fetching ${tableName}:`, error);
-      throw error;
-    }
-
-    return data && data.length > 0 ? data[0] : null;
-  }
-
-  // ============= Login ============= //
   static async fetchUserByEmail(email: string): Promise<User | null> {
     const query = supabase.from("users").select("*").eq("email", email);
     const { data, error } = await query;
@@ -70,9 +44,17 @@ export default class PersistentDataService {
 
   static async saveUserToken(
     userId: number,
-    tokenData: { encrypted_token: string; token_iv: string; encryption_key: string }
+    tokenData: {
+      encrypted_token: string;
+      token_iv: string;
+      encryption_key: string;
+    }
   ): Promise<void> {
-    if (!tokenData.encrypted_token || !tokenData.token_iv || !tokenData.encryption_key) {
+    if (
+      !tokenData.encrypted_token ||
+      !tokenData.token_iv ||
+      !tokenData.encryption_key
+    ) {
       throw new Error(
         "Invalid token data: encrypted_token, token_iv, and encryption_key are required"
       );
@@ -96,9 +78,11 @@ export default class PersistentDataService {
     }
   }
 
-  static async getUserToken(
-    userId: number
-  ): Promise<{ encrypted_token: string; token_iv: string; encryption_key: string } | null> {
+  static async getUserToken(userId: number): Promise<{
+    encrypted_token: string;
+    token_iv: string;
+    encryption_key: string;
+  } | null> {
     const { data, error } = await supabase
       .from("user_tokens")
       .select("encrypted_token, token_iv, encryption_key")

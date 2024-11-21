@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: [
-    '@nuxtjs/supabase',
+    "@nuxtjs/supabase",
     "@nuxtjs/tailwindcss",
     "@pinia/nuxt",
     "pinia-plugin-persistedstate/nuxt",
@@ -25,10 +25,9 @@ export default defineNuxtConfig({
     },
   },
   supabase: {
-    // Optional: Configure Supabase module options
     redirect: false,
     url: process.env.NUXT_PUBLIC_SUPABASE_URL,
-    key: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY
+    key: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY,
   },
   app: {
     head: {

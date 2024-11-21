@@ -1,3 +1,4 @@
+// stores/useAuthStore.ts
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import type { User } from "@/types/interfaces";
@@ -11,7 +12,7 @@ export const useAuthStore = defineStore(
     const todoistToken = ref<string | null>(null);
 
     const isAuthenticated = computed(() => !!user.value && !isTokenExpired());
-    const userId = computed(() => user.value?.id || '');
+    const userId = computed(() => user.value?.id || "");
 
     function setUser(newUser: User, exp: number) {
       user.value = newUser;
@@ -50,6 +51,13 @@ export const useAuthStore = defineStore(
     async function logout() {
       user.value = null;
       expirationTime.value = null;
+      todoistToken.value = null;
+      try {
+        const { googleLogout } = require("vue3-google-login");
+        googleLogout();
+      } catch (error) {
+        console.error("Google logout error:", error);
+      }
     }
 
     return {

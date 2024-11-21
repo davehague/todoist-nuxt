@@ -3,7 +3,9 @@
   <header class="border-b dark:border-gray-700">
     <div class="max-w-6xl mx-auto py-4">
       <div class="flex items-center justify-between">
-        <h1 class="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white px-4 md:py-4 md:pl-0">
+        <h1
+          class="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white px-4 md:py-4 md:pl-0"
+        >
           Todoist Task Viewer
         </h1>
         <button
@@ -95,8 +97,9 @@
                   to="/"
                   class="px-4 py-2 rounded-lg transition-colors duration-150 hover:bg-gray-100 dark:hover:bg-gray-700"
                   :class="{
-                    'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-medium': $route.path === '/',
-                    'text-gray-700 dark:text-gray-300': $route.path !== '/'
+                    'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-medium':
+                      $route.path === '/',
+                    'text-gray-700 dark:text-gray-300': $route.path !== '/',
                   }"
                 >
                   Active Tasks
@@ -107,8 +110,10 @@
                   to="/completed"
                   class="px-4 py-2 rounded-lg transition-colors duration-150 hover:bg-gray-100 dark:hover:bg-gray-700"
                   :class="{
-                    'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-medium': $route.path === '/completed',
-                    'text-gray-700 dark:text-gray-300': $route.path !== '/completed'
+                    'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-medium':
+                      $route.path === '/completed',
+                    'text-gray-700 dark:text-gray-300':
+                      $route.path !== '/completed',
                   }"
                 >
                   Completed Tasks
@@ -117,7 +122,7 @@
             </ul>
           </nav>
         </div>
-        
+
         <div class="flex items-center space-x-4">
           <RouterLink to="/profile" class="flex items-center space-x-2">
             <img
@@ -126,7 +131,9 @@
               alt="User Picture"
               class="w-8 h-8 rounded-full"
             />
-            <span class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
+            <span
+              class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+            >
               {{ authStore.user.name }}
             </span>
           </RouterLink>
