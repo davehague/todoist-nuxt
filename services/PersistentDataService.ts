@@ -116,4 +116,16 @@ export default class PersistentDataService {
 
     return data;
   }
+
+  static async deleteUserToken(userId: number): Promise<void> {
+    const { error } = await supabase
+      .from("user_tokens")
+      .delete()
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("Error deleting user token:", error);
+      throw error;
+    }
+  }
 }

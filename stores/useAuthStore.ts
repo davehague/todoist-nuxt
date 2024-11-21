@@ -40,6 +40,10 @@ export const useAuthStore = defineStore(
       todoistToken.value = token;
     }
 
+    function clearTodoistToken() {
+      todoistToken.value = null;
+    }
+
     function logout() {
       user.value = null;
       expirationTime.value = null;
@@ -53,6 +57,7 @@ export const useAuthStore = defineStore(
       userId,
       setUser,
       setTodoistToken,
+      clearTodoistToken,
       isTokenExpired,
       logout,
     };

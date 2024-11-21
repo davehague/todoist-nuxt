@@ -1,10 +1,9 @@
 <template>
-  <div class="max-w-4xl mx-auto p-4">
-    <div class="flex items-center gap-2 mb-6">
-      <CheckCircleIcon class="h-6 w-6" />
-      <h1 class="text-2xl font-bold">Completed Tasks</h1>
+  <div class="p-4 md:p-12">
+    <div class="flex items-center justify-start gap-2 mb-6">
+      <CheckCircleIcon class="h-6 w-6 text-gray-900 dark:text-gray-100" />
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">Completed Tasks</h1>
     </div>
-
     <div>
       <div class="mb-6 flex flex-col gap-4">
         <SearchBar
@@ -20,7 +19,7 @@
             v-model="selectedDate"
             class="px-4 py-2 border rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white"
           />
-          <div class="text-lg text-orange-500 dark:text-gray-300">
+          <div class="text-lg text-orange-500">
             {{ displayedTasks.length }} task{{
               displayedTasks.length !== 1 ? "s" : ""
             }}
@@ -66,14 +65,13 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from "vue";
-import { format, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
 import { CheckCircleIcon } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useTaskStore } from "@/stores/useTaskStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useSectionStore } from "@/stores/useSectionStore";
 import { copyTasksToClipboard } from "@/utils/copyTasks";
-import TokenInput from "@/components/TokenInput.vue";
 import TaskList from "@/components/TaskList.vue";
 import TaskModal from "@/components/TaskModal.vue";
 import SearchBar from "@/components/SearchBar.vue";
