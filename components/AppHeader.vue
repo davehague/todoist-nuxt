@@ -1,7 +1,7 @@
 // components/AppHeader.vue
 <template>
   <header class="border-b dark:border-gray-700">
-    <div class="max-w-6xl mx-auto py-4">
+    <div class="mx-auto md:px-12 py-4">
       <div class="flex items-center justify-between">
         <h1
           class="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white px-4 md:py-4 md:pl-0"
