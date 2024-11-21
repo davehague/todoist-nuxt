@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import type { User } from "@/types/interfaces";
+import PersistentDataService from "@/services/PersistentDataService";
 
 export const useAuthStore = defineStore(
   "auth",
@@ -13,7 +14,6 @@ export const useAuthStore = defineStore(
     const userId = computed(() => user.value?.id || '');
 
     function setUser(newUser: User, exp: number) {
-      console.log("Setting user:", newUser);
       user.value = newUser;
       expirationTime.value = exp;
       startSessionTimer();
@@ -40,14 +40,16 @@ export const useAuthStore = defineStore(
       todoistToken.value = token;
     }
 
-    function clearTodoistToken() {
+    async function clearTodoistToken() {
       todoistToken.value = null;
+      if (user.value?.id) {
+        await PersistentDataService.deleteUserToken(user.value.id);
+      }
     }
 
-    function logout() {
+    async function logout() {
       user.value = null;
       expirationTime.value = null;
-      todoistToken.value = null;
     }
 
     return {

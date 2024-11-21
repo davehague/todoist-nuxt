@@ -1,8 +1,8 @@
 export default defineNuxtRouteMiddleware((to) => {
     const authStore = useAuthStore();
   
-    // Allow access to login page
-    if (to.path === '/login') {
+    // Allow access to login and profile pages
+    if (to.path === '/login' || to.path === '/profile') {
       return;
     }
   
@@ -10,4 +10,9 @@ export default defineNuxtRouteMiddleware((to) => {
     if (!authStore.isAuthenticated) {
       return navigateTo('/login');
     }
-  })
+
+    // Redirect to profile if user exists but no todoist token
+    if (!authStore.todoistToken) {
+      return navigateTo('/profile');
+    }
+})

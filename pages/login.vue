@@ -1,20 +1,28 @@
 <template>
   <ClientOnly>
-    <div class="flex justify-center items-center h-screen bg-gray-100">
-      <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 class="text-2xl font-bold mb-4 text-center">
+    <div
+      class="flex justify-center items-center h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-200"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md w-full max-w-md transition-colors duration-200"
+      >
+        <h1
+          class="text-2xl font-bold mb-4 text-center text-gray-900 dark:text-white"
+        >
           Welcome to Todoist Task Manager
         </h1>
-        <p class="mb-6 text-center text-gray-600">
+        <p class="mb-6 text-center text-gray-600 dark:text-gray-300">
           Sign in to access your account
         </p>
-        <GoogleLogin
-          :callback="handleLoginSuccess"
-          :error="handleLoginError"
-          :client-id="config.public.googleClientId"
-          prompt
-          auto-login
-        />
+        <div class="flex justify-center">
+          <GoogleLogin
+            :callback="handleLoginSuccess"
+            :error="handleLoginError"
+            :client-id="config.public.googleClientId"
+            prompt
+            auto-login
+          />
+        </div>
       </div>
     </div>
   </ClientOnly>
@@ -60,7 +68,6 @@ const handleLoginSuccess = async (
     const credential = response.credential;
     const payload = decodeJWT(credential);
 
-    console.log("Login success, payload:", payload);
     const existingUser = await PersistentDataService.fetchUserByEmail(
       payload.email
     );
@@ -86,10 +93,13 @@ const handleLoginSuccess = async (
     if (!userToken) {
       await router.push("/profile");
     } else {
-      const decryptedToken = await decryptToken({
-        encrypted_token: userToken.encrypted_token,
-        token_iv: userToken.token_iv,
-      });
+      const decryptedToken = await decryptToken(
+        {
+          encrypted_token: userToken.encrypted_token,
+          token_iv: userToken.token_iv,
+        },
+        userToken.encryption_key
+      );
       authStore.setTodoistToken(decryptedToken);
       await router.push("/");
     }

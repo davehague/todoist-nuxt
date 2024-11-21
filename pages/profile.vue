@@ -42,9 +42,7 @@ async function saveToken() {
     }
 
     if (!token.value) {
-      await PersistentDataService.deleteUserToken(authStore.user.id);
       authStore.clearTodoistToken();
-      await useRouter().push('/');
       return;
     }
 

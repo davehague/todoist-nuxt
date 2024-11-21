@@ -34,26 +34,28 @@
           <ul
             class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-6"
           >
-            <li>
-              <RouterLink
-                to="/"
-                @click="closeMenu"
-                class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                :class="{ 'font-semibold': $route.path === '/' }"
-              >
-                Active Tasks
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink
-                to="/completed"
-                @click="closeMenu"
-                class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                :class="{ 'font-semibold': $route.path === '/completed' }"
-              >
-                Completed Tasks
-              </RouterLink>
-            </li>
+            <template v-if="authStore.todoistToken">
+              <li>
+                <RouterLink
+                  to="/"
+                  @click="closeMenu"
+                  class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                  :class="{ 'font-semibold': $route.path === '/' }"
+                >
+                  Active Tasks
+                </RouterLink>
+              </li>
+              <li>
+                <RouterLink
+                  to="/completed"
+                  @click="closeMenu"
+                  class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                  :class="{ 'font-semibold': $route.path === '/completed' }"
+                >
+                  Completed Tasks
+                </RouterLink>
+              </li>
+            </template>
             <li>
               <RouterLink
                 to="/profile"
@@ -85,34 +87,36 @@
         </div>
       </div>
       <div class="hidden md:flex items-center justify-between mt-6">
-        <nav v-if="authStore.isAuthenticated" class="flex-1">
-          <ul class="flex space-x-2">
-            <li>
-              <RouterLink
-                to="/"
-                class="px-4 py-2 rounded-lg transition-colors duration-150 hover:bg-gray-100 dark:hover:bg-gray-700"
-                :class="{
-                  'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-medium': $route.path === '/',
-                  'text-gray-700 dark:text-gray-300': $route.path !== '/'
-                }"
-              >
-                Active Tasks
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink
-                to="/completed"
-                class="px-4 py-2 rounded-lg transition-colors duration-150 hover:bg-gray-100 dark:hover:bg-gray-700"
-                :class="{
-                  'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-medium': $route.path === '/completed',
-                  'text-gray-700 dark:text-gray-300': $route.path !== '/completed'
-                }"
-              >
-                Completed Tasks
-              </RouterLink>
-            </li>
-          </ul>
-        </nav>
+        <div class="flex-1">
+          <nav v-if="authStore.isAuthenticated && authStore.todoistToken">
+            <ul class="flex space-x-2">
+              <li>
+                <RouterLink
+                  to="/"
+                  class="px-4 py-2 rounded-lg transition-colors duration-150 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  :class="{
+                    'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-medium': $route.path === '/',
+                    'text-gray-700 dark:text-gray-300': $route.path !== '/'
+                  }"
+                >
+                  Active Tasks
+                </RouterLink>
+              </li>
+              <li>
+                <RouterLink
+                  to="/completed"
+                  class="px-4 py-2 rounded-lg transition-colors duration-150 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  :class="{
+                    'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-medium': $route.path === '/completed',
+                    'text-gray-700 dark:text-gray-300': $route.path !== '/completed'
+                  }"
+                >
+                  Completed Tasks
+                </RouterLink>
+              </li>
+            </ul>
+          </nav>
+        </div>
         
         <div class="flex items-center space-x-4">
           <RouterLink to="/profile" class="flex items-center space-x-2">

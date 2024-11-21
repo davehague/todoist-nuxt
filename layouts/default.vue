@@ -1,13 +1,13 @@
 <template>
   <div class="min-h-screen flex flex-col dark:bg-gray-900">
-    <AppHeader />
+    <AppHeader v-if="authStore.isAuthenticated" />
     <main class="flex-1">
       <slot />
     </main>
-    <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
-// No additional setup needed
+import { useAuthStore } from "@/stores/useAuthStore";
+const authStore = useAuthStore();
 </script>
