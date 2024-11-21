@@ -7,28 +7,47 @@
           Todoist Task Viewer
         </h1>
         
-        <nav>
-          <ul class="flex space-x-6">
-            <li>
-              <RouterLink 
-                to="/" 
-                class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                :class="{ 'font-semibold': $route.path === '/' }"
-              >
-                Active Tasks
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink 
-                to="/completed" 
-                class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                :class="{ 'font-semibold': $route.path === '/completed' }"
-              >
-                Completed Tasks
-              </RouterLink>
-            </li>
-          </ul>
-        </nav>
+        <div class="flex items-center space-x-6">
+          <nav v-if="authStore.isAuthenticated">
+            <ul class="flex space-x-6">
+              <li>
+                <RouterLink 
+                  to="/" 
+                  class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                  :class="{ 'font-semibold': $route.path === '/' }"
+                >
+                  Active Tasks
+                </RouterLink>
+              </li>
+              <li>
+                <RouterLink 
+                  to="/completed" 
+                  class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                  :class="{ 'font-semibold': $route.path === '/completed' }"
+                >
+                  Completed Tasks
+                </RouterLink>
+              </li>
+            </ul>
+          </nav>
+          
+          <div>
+            <button
+              v-if="authStore.isAuthenticated"
+              @click="handleLogout"
+              class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+            >
+              Logout
+            </button>
+            <RouterLink
+              v-else
+              to="/login"
+              class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+            >
+              Login
+            </RouterLink>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -36,4 +55,14 @@
 
 <script setup>
 import { RouterLink } from 'vue-router'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { useRouter } from 'vue-router'
+
+const authStore = useAuthStore()
+const router = useRouter()
+
+const handleLogout = () => {
+  authStore.logout()
+  router.push('/login')
+}
 </script>

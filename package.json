@@ -12,6 +12,7 @@
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.1.5",
+    "@nuxtjs/supabase": "^1.4.3",
     "@pinia/nuxt": "^0.5.5",
     "@supabase/supabase-js": "^2.46.1",
     "date-fns": "^4.1.0",

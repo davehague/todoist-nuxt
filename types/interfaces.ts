@@ -14,6 +14,7 @@ export interface UserToken {
   user_id: number;
   encrypted_token: string;
   token_iv: string;
+  encryption_key: string;
   created_at: Date;
   updated_at: Date;
 }

@@ -22,7 +22,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { encryptToken } from "@/utils/encryption";
+import { encryptToken, generateNewEncryptionKey } from "@/utils/encryption";
 import PersistentDataService from "@/services/PersistentDataService";
 import TokenInput from "@/components/TokenInput.vue";
 
@@ -31,17 +31,27 @@ const authStore = useAuthStore();
 
 async function saveToken() {
   try {
-    console.log("Saving token:", token.value);
-    console.log("User:", authStore.user);
     if (!authStore.user) {
       throw new Error("User is not authenticated");
     }
-    const encryptedToken = await encryptToken(token.value);
+
+    // Generate a new encryption key
+    const encryptionKey = await generateNewEncryptionKey();
+    
+    // Encrypt the token with the new key
+    const encryptedTokenData = await encryptToken(token.value, encryptionKey);
+    
+    // Save both the encrypted token and the encryption key
     await PersistentDataService.saveUserToken(
       authStore.user.id,
-      encryptedToken
+      {
+        ...encryptedTokenData,
+        encryption_key: encryptionKey
+      }
     );
-    alert("Token saved successfully");
+
+    authStore.setTodoistToken(token.value);
+    await useRouter().push('/');
   } catch (error) {
     console.error("Error saving token:", error);
     alert("Failed to save token. Please try again.");
@@ -52,7 +62,6 @@ onMounted(async () => {
   console.log("Profile mounted");
   console.log("AuthStore state:", {
     user: authStore.user,
-    accessToken: authStore.accessToken,
     isAuthenticated: authStore.isAuthenticated
   });
 });

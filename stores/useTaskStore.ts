@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 import { useProjectStore } from "./useProjectStore";
 import { useSectionStore } from "./useSectionStore";
 import type { Task, RawTask, CompletedTask } from "~/types/interfaces";
+import { useApiHeaders } from '@/composables/useApiHeaders'
 
 interface TaskState {
   tasks: Task[];
@@ -92,45 +93,37 @@ export const useTaskStore = defineStore("tasks", {
 
   actions: {
     async fetchTasks() {
-      const projectStore = useProjectStore();
-      const sectionStore = useSectionStore();
-
-      this.isLoading = true;
+      const { headers } = useApiHeaders()
       try {
-        await Promise.all([
-          projectStore.fetchProjects(),
-          sectionStore.fetchSections(),
-        ]);
-
-        const rawTasks = await $fetch<RawTask[]>('/api/todoist/tasks');
-
-        this.tasks = rawTasks.map(
-          (task): Task => ({
-            ...task,
-            project_name: projectStore.getProjectName(task.project_id),
-            section_name: sectionStore.getSectionName(task.section_id),
-          })
-        );
-
-        this.filteredTasks = this.tasks;
+        this.isLoading = true
+        const response = await fetch('/api/todoist/tasks', {
+          method: 'GET',
+          headers: headers as HeadersInit
+        })
+        if (!response.ok) throw new Error('Failed to fetch tasks')
+        this.tasks = await response.json()
       } catch (error) {
-        console.error("Error fetching tasks:", error);
-        throw error;
+        console.error('Error fetching tasks:', error)
       } finally {
-        this.isLoading = false;
+        this.isLoading = false
       }
     },
 
     async fetchCompletedTasks() {
-      this.isLoading = true;
+      const { headers } = useApiHeaders()
       try {
-        const response = await $fetch<{ items: CompletedTask[] }>('/api/todoist/completed');
-        this.completedTasks = response.items;
+        this.isLoading = true
+        const response = await fetch('/api/todoist/completed', {
+          method: 'GET',
+          headers: headers as HeadersInit
+        })
+        if (!response.ok) throw new Error('Failed to fetch completed tasks')
+        const data = await response.json()
+        this.completedTasks = data.items || []
       } catch (error) {
-        console.error("Error fetching completed tasks:", error);
-        throw error;
+        console.error('Error fetching completed tasks:', error)
       } finally {
-        this.isLoading = false;
+        this.isLoading = false
       }
     },
 

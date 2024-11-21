@@ -1,28 +1,34 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ["@nuxtjs/tailwindcss", "@pinia/nuxt", '@pinia-plugin-persistedstate/nuxt'],
-  compatibilityDate: "2024-04-03",
+  modules: [
+    '@nuxtjs/supabase',
+    "@nuxtjs/tailwindcss",
+    "@pinia/nuxt",
+    "pinia-plugin-persistedstate/nuxt",
+  ],
+  compatibilityDate: "2024-11-21",
   typescript: {
     strict: true,
   },
+  devtools: { enabled: true },
   devServer: {
     https: {
-      key: './localhost-key.pem',
-      cert: './localhost.pem',
-    }
+      key: "./localhost-key.pem",
+      cert: "./localhost.pem",
+    },
   },
   runtimeConfig: {
-    // Private keys are only available on the server
-    // apiSecret: '123',
-
-    // Public keys that are exposed to the client
     public: {
-      googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID
-    }
+      googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID,
+      supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL,
+      supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY,
+    },
   },
-  devtools: { enabled: true },
-  experimental: {
-    viewTransition: false,
+  supabase: {
+    // Optional: Configure Supabase module options
+    redirect: false,
+    url: process.env.NUXT_PUBLIC_SUPABASE_URL,
+    key: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY
   },
   app: {
     head: {
@@ -54,4 +60,4 @@ export default defineNuxtConfig({
       ],
     },
   },
-});
+} as any);

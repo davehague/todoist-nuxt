@@ -62,6 +62,6 @@ const handleCopy = async (event: MouseEvent, limit?: number) => {
 };
 
 onMounted(async () => {
-  await taskStore.fetchTasks();
+  await taskStore.fetchTasks()
 });
 </script>

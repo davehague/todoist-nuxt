@@ -182,6 +182,6 @@ onMounted(async () => {
     taskStore.fetchCompletedTasks(),
     projectStore.fetchProjects(),
     sectionStore.fetchSections(),
-  ]);
+  ])
 });
 </script>

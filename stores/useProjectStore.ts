@@ -1,6 +1,7 @@
 // stores/useProjectStore.ts
 import { defineStore } from 'pinia';
 import type { Project } from '~/types/interfaces';
+import { useApiHeaders } from '@/composables/useApiHeaders'
 
 interface ProjectState {
   projects: Project[];
@@ -21,14 +22,19 @@ export const useProjectStore = defineStore('projects', {
 
   actions: {
     async fetchProjects() {
+      const { headers } = useApiHeaders()
       this.isLoading = true;
       try {
-        this.projects = await $fetch<Project[]>('/api/todoist/projects');
+        const response = await fetch('/api/todoist/projects', {
+          method: 'GET',
+          headers: headers as HeadersInit
+        })
+        if (!response.ok) throw new Error('Failed to fetch projects')
+        this.projects = await response.json()
       } catch (error) {
-        console.error('Error fetching projects:', error);
-        throw error;
+        console.error('Error fetching projects:', error)
       } finally {
-        this.isLoading = false;
+        this.isLoading = false
       }
     }
   }

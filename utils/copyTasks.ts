@@ -2,15 +2,15 @@ import type { Task, CompletedTask } from "~/types/interfaces";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useSectionStore } from "@/stores/useSectionStore";
 
-const projectStore = useProjectStore();
-const sectionStore = useSectionStore();
-
 type TaskLike = Task | CompletedTask;
 
 export const copyTasksToClipboard = async (
   tasks: TaskLike[],
   limit?: number
 ) => {
+  const projectStore = useProjectStore();
+  const sectionStore = useSectionStore();
+
   const tasksToCopy = limit ? tasks.slice(0, limit) : tasks;
 
   const text = tasksToCopy

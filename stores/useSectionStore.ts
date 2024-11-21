@@ -1,6 +1,7 @@
 // stores/useSectionStore.ts
 import { defineStore } from 'pinia';
 import type { Section } from '~/types/interfaces';
+import { useApiHeaders } from '@/composables/useApiHeaders'
 
 interface SectionState {
   sections: Section[];
@@ -21,12 +22,17 @@ export const useSectionStore = defineStore('sections', {
 
   actions: {
     async fetchSections() {
+      const { headers } = useApiHeaders()
       this.isLoading = true;
       try {
-        this.sections = await $fetch<Section[]>('/api/todoist/sections');
+        const response = await fetch('/api/todoist/sections', {
+          method: 'GET',
+          headers: headers as HeadersInit
+        })
+        if (!response.ok) throw new Error('Failed to fetch sections')
+        this.sections = await response.json()
       } catch (error) {
         console.error('Error fetching sections:', error);
-        throw error;
       } finally {
         this.isLoading = false;
       }
