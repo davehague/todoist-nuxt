@@ -1,3 +1,4 @@
+// login.vue
 <template>
   <ClientOnly>
     <div
@@ -44,6 +45,7 @@ import { decryptToken } from "@/utils/encryption";
 import { ref } from "vue";
 
 const config = useRuntimeConfig();
+const { $supabaseAuth } = useNuxtApp();
 
 type GoogleJWTPayload = {
   email: string;
@@ -74,6 +76,11 @@ const handleLoginSuccess = async (
       throw new Error("No credential found in response");
     }
 
+    // Sign in to Supabase with Google token
+    const supabaseAuth = await $supabaseAuth.exchangeGoogleToken(
+      response.credential
+    );
+
     const credential = response.credential;
     const payload = decodeJWT(credential);
 
@@ -89,6 +96,9 @@ const handleLoginSuccess = async (
         email: payload.email,
         name: payload.name,
         picture: payload.picture,
+        supabase_id: supabaseAuth.user.id,
+        email_verified: payload.email_verified as boolean,
+        last_login: new Date(),
       });
 
       if (!newUser) {

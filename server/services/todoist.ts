@@ -1,5 +1,5 @@
 import { H3Event, createError, getHeader } from "h3";
-import { supabase } from "@/utils/supabaseClient";
+import { serverSupabase } from "../utils/serverSupabaseClient";
 import { decryptToken } from "@/utils/encryption";
 import { requireUserSession } from "../utils/auth";
 
@@ -13,6 +13,7 @@ export class TodoistService {
     }
 
     await requireUserSession(event);
+
     const userId = getHeader(event, "x-user-id");
     if (!userId) {
       throw createError({
@@ -21,7 +22,7 @@ export class TodoistService {
       });
     }
 
-    const { data: userToken, error } = await supabase
+    const { data: userToken, error } = await serverSupabase
       .from("user_tokens")
       .select("encrypted_token, token_iv, encryption_key")
       .eq("user_id", userId)

@@ -9,4 +9,9 @@ const supabaseKey =
 
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   db: { schema: "todoist" },
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
 });

@@ -3,6 +3,8 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import type { User } from "@/types/interfaces";
 import PersistentDataService from "@/services/PersistentDataService";
+import { googleLogout } from "vue3-google-login";
+import { supabase } from "@/utils/supabaseClient";
 
 export const useAuthStore = defineStore(
   "auth",
@@ -49,14 +51,17 @@ export const useAuthStore = defineStore(
     }
 
     async function logout() {
-      user.value = null;
-      expirationTime.value = null;
-      todoistToken.value = null;
       try {
-        const { googleLogout } = require("vue3-google-login");
+        // Sign out from services
         googleLogout();
+        await supabase.auth.signOut();
+
+        // Clear local state
+        user.value = null;
+        expirationTime.value = null;
+        todoistToken.value = null;
       } catch (error) {
-        console.error("Google logout error:", error);
+        console.error("Logout error:", error);
       }
     }
 
@@ -74,5 +79,5 @@ export const useAuthStore = defineStore(
   },
   {
     persist: true,
-  } as any
+  }
 );

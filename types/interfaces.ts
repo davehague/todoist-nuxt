@@ -8,6 +8,8 @@ export interface User {
   created_at: Date;
   updated_at: Date;
   last_login: Date;
+  supabase_id: string;
+  email_verified: boolean;
 }
 
 export interface UserToken {
@@ -83,18 +85,4 @@ export interface Project {
 export interface Section {
   id: string;
   name: string;
-}
-
-export interface Due {
-  date: string;
-  string: string;
-  lang: string;
-  recurring: boolean;
-  datetime?: string;
-  timezone?: string;
-}
-
-export interface ApiResponse<T> {
-  data?: T;
-  error?: string;
 }

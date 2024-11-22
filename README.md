@@ -32,7 +32,7 @@ npm run dev
 ```
 
 ## Dependencies
-- Supabase
+- Supabase with RLS enabled
 - Nuxt 3
 - Vue 3
 - Headless UI

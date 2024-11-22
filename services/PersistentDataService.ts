@@ -35,7 +35,10 @@ export default class PersistentDataService {
   ): Promise<User | null> {
     const { data, error } = await supabase
       .from("users")
-      .insert(user)
+      .insert({
+        ...user,
+        last_login: new Date().toISOString(),
+      })
       .select()
       .single();
     if (error) throw error;
@@ -78,22 +81,14 @@ export default class PersistentDataService {
     }
   }
 
-  static async getUserToken(userId: number): Promise<{
-    encrypted_token: string;
-    token_iv: string;
-    encryption_key: string;
-  } | null> {
+  static async getUserToken(userId: number) {
     const { data, error } = await supabase
       .from("user_tokens")
       .select("encrypted_token, token_iv, encryption_key")
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      if (error.code === "PGRST116") {
-        // no rows returned
-        return null;
-      }
       console.error("Error fetching user token:", error);
       throw error;
     }
