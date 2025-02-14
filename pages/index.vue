@@ -43,9 +43,8 @@ const projectTasks = computed(() =>
 );
 
 const nonProjectTasks = computed(() =>
-    taskStore.sortedTasks.filter(task => task.project_name !== 'Projects
-    ')
-    );
+    taskStore.sortedTasks.filter(task => task.project_name !== 'Projects')
+);
 
 // Update filteredTasks when search query changes
 watch(searchQuery, (query) => {
