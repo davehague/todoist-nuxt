@@ -17,7 +17,9 @@ interface TaskState {
     label: string;
     sort: string;
     projectSection: string;
+    priority: string; // Add priority to filter settings
   };
+  filterFn: ((task: Task) => boolean) | null;
 }
 
 export const useTaskStore = defineStore("tasks", {
@@ -33,12 +35,22 @@ export const useTaskStore = defineStore("tasks", {
       label: "",
       sort: "created_desc",
       projectSection: "",
+      priority: "", // Add priority to initial state
     },
+    filterFn: null,
   }),
 
   getters: {
     sortedTasks: (state) => {
       let filtered = state.filteredTasks;
+
+      // Apply priority filter first
+      if (state.filterSettings.priority) {
+        console.log("Filtering by priority:", state.filterSettings.priority); // Add debugging
+        filtered = filtered.filter(
+          (task) => task.priority === parseInt(state.filterSettings.priority)
+        );
+      }
 
       if (state.filterSettings.projectSection) {
         const [project, section] =
@@ -75,23 +87,40 @@ export const useTaskStore = defineStore("tasks", {
         );
       }
 
+      // Add priority filter
+      if (state.filterSettings.priority) {
+        filtered = filtered.filter(
+          (task) => task.priority === parseInt(state.filterSettings.priority)
+        );
+      }
+
+      if (state.filterFn) {
+        filtered = filtered.filter(state.filterFn);
+      }
+
       return [...filtered].sort((a, b) => {
-        switch (state.filterSettings.sort) {
-          case "due_asc":
-            return (a.due?.date || "9999") > (b.due?.date || "9999") ? 1 : -1;
-          case "due_desc":
-            return (a.due?.date || "9999") < (b.due?.date || "9999") ? 1 : -1;
-          case "created_asc":
-            return a.created_at > b.created_at ? 1 : -1;
-          case "created_desc":
-            return a.created_at < b.created_at ? 1 : -1;
-          case "project":
-            return a.project_name.localeCompare(b.project_name);
-          case "content":
-            return a.content.localeCompare(b.content);
-          default:
-            return 0;
+        // First sort by priority (priority 1 is highest, so we reverse the comparison)
+        if (a.priority !== b.priority) {
+          return b.priority - a.priority; // Changed from a.priority - b.priority
         }
+
+        // Then sort by overdue status
+        const aDate = a.due?.date ? new Date(a.due.date) : null;
+        const bDate = b.due?.date ? new Date(b.due.date) : null;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const aOverdue = aDate && aDate < today;
+        const bOverdue = bDate && bDate < today;
+
+        if (aOverdue && !bOverdue) return -1;
+        if (!aOverdue && bOverdue) return 1;
+
+        // Finally sort by due date
+        if (aDate && bDate) {
+          return aDate.getTime() - bDate.getTime();
+        }
+        return 0;
       });
     },
   },
@@ -153,6 +182,9 @@ export const useTaskStore = defineStore("tasks", {
 
     updateFilters(filters: TaskState["filterSettings"]) {
       this.filterSettings = filters;
+      // Reapply filters to filtered tasks
+      this.filteredTasks = this.tasks;
+      this.handleSearch(); // This ensures search is maintained
     },
 
     handleSearch() {
@@ -169,6 +201,14 @@ export const useTaskStore = defineStore("tasks", {
     clearSearch() {
       this.searchQuery = "";
       this.filteredTasks = this.tasks;
+    },
+
+    setFilter(filterFn: (task: Task) => boolean) {
+      this.filterFn = filterFn;
+    },
+
+    clearFilter() {
+      this.filterFn = null;
     },
   },
 });

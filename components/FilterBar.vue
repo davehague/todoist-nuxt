@@ -1,34 +1,22 @@
 <template>
   <div class="flex flex-wrap gap-2 w-full py-2 border-b dark:border-gray-700">
     <!-- Project and Section Filter -->
-    <select
-      v-model="selectedProjectSection"
+    <select v-model="selectedProjectSection"
       class="px-3 py-2 text-sm border rounded-lg dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600"
-      @change="emitFilters"
-    >
+      @change="emitFilters">
       <option value="">All Projects</option>
-      <optgroup
-        v-for="project in projectsWithSections"
-        :key="project.name"
-        :label="project.name"
-      >
+      <optgroup v-for="project in projectsWithSections" :key="project.name" :label="project.name">
         <option :value="project.name">{{ project.name }}</option>
-        <option
-          v-for="section in project.sections"
-          :key="section"
-          :value="`${project.name} > ${section}`"
-        >
+        <option v-for="section in project.sections" :key="section" :value="`${project.name} > ${section}`">
           {{ project.name }} > {{ section }}
         </option>
       </optgroup>
     </select>
 
     <!-- Due Date Filter -->
-    <select
-      v-model="selectedDueFilter"
+    <select v-model="selectedDueFilter"
       class="px-3 py-2 text-sm border rounded-lg dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600"
-      @change="emitFilters"
-    >
+      @change="emitFilters">
       <option value="all">All Due Dates</option>
       <option value="today">Due Today</option>
       <option value="has_due">Has Due Date</option>
@@ -36,23 +24,28 @@
     </select>
 
     <!-- Labels Filter -->
-    <select
-      v-model="selectedLabel"
+    <select v-model="selectedLabel"
       class="px-3 py-2 text-sm border rounded-lg dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600"
-      @change="emitFilters"
-    >
+      @change="emitFilters">
       <option value="">All Labels</option>
       <option v-for="label in uniqueLabels" :key="label" :value="label">
         {{ label }}
       </option>
     </select>
 
-    <!-- Sort Order -->
-    <select
-      v-model="selectedSort"
+    <!-- Priority Filter -->
+    <select v-model="selectedPriority"
       class="px-3 py-2 text-sm border rounded-lg dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600"
-      @change="emitFilters"
-    >
+      @change="emitFilters">
+      <option value="">All Priorities</option>
+      <option v-for="p in [4, 3, 2, 1]" :key="p" :value="p">
+        {{ p === 4 ? 'High' : p === 3 ? 'Medium' : p === 2 ? 'Low' : 'None' }}</option>
+    </select>
+
+    <!-- Sort Order -->
+    <select v-model="selectedSort"
+      class="px-3 py-2 text-sm border rounded-lg dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600"
+      @change="emitFilters">
       <option value="created_desc">Created Date (Newest)</option>
       <option value="created_asc">Created Date (Oldest)</option>
       <option value="due_desc">Due Date (Latest)</option>
@@ -62,10 +55,8 @@
     </select>
 
     <!-- Reset Button -->
-    <button
-      @click="resetFilters"
-      class="px-3 py-2 text-sm rounded-lg bg-gray-500 dark:bg-gray-700 text-white dark:text-gray-300 hover:bg-gray-600 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 transition-colors"
-    >
+    <button @click="resetFilters"
+      class="px-3 py-2 text-sm rounded-lg bg-gray-500 dark:bg-gray-700 text-white dark:text-gray-300 hover:bg-gray-600 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 transition-colors">
       Reset Filters
     </button>
   </div>
@@ -83,6 +74,7 @@ const selectedDueFilter = ref("all");
 const selectedLabel = ref("");
 const selectedSort = ref("created_desc");
 const selectedProjectSection = ref("");
+const selectedPriority = ref("");
 
 const emit = defineEmits<{
   (
@@ -92,6 +84,7 @@ const emit = defineEmits<{
       label: string;
       sort: string;
       projectSection: string;
+      priority: string;
     }
   ): void;
 }>();
@@ -125,11 +118,20 @@ const projectsWithSections = computed(() => {
 });
 
 const emitFilters = () => {
+  console.log('Emitting filters:', {
+    dueFilter: selectedDueFilter.value,
+    label: selectedLabel.value,
+    sort: selectedSort.value,
+    projectSection: selectedProjectSection.value,
+    priority: selectedPriority.value,
+  });
+
   emit("update:filters", {
     dueFilter: selectedDueFilter.value,
     label: selectedLabel.value,
     sort: selectedSort.value,
     projectSection: selectedProjectSection.value,
+    priority: selectedPriority.value,
   });
 };
 
@@ -138,6 +140,7 @@ const resetFilters = () => {
   selectedLabel.value = "";
   selectedSort.value = "created_desc";
   selectedProjectSection.value = "";
+  selectedPriority.value = "";
   emitFilters();
 };
 </script>
