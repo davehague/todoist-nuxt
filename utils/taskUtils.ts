@@ -1,20 +1,24 @@
 import { type Task } from "@/types/interfaces";
-import { isToday } from "date-fns";
 
-export function getTaskStatus(task: Task): "overdue" | "today" | "none" {
-  if (!task.due?.date) return "none";
-  const taskDate = new Date(task.due.date);
+export function getTaskStatus(task: Task): "overdue" | "due" | "no-date" {
+  if (!task.due?.date) return "no-date";
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  if (taskDate < today) return "overdue";
-  if (isToday(taskDate)) return "today";
-  return "none";
+  const todayString = today.toISOString().split("T")[0]; // YYYY-MM-DD
+
+  return task.due.date < todayString ? "overdue" : "due";
 }
 
 export function getPriorityIndicator(priority: number): string {
   return priority > 1 ? "!".repeat(priority - 1) : "";
 }
 
-// Remove or comment out PRIORITY_COLORS as it's no longer needed
-// export const PRIORITY_COLORS = { ... };
+export function isOverdue(task: Task): boolean {
+  if (!task.due?.date) return false;
+  const taskDate = new Date(task.due.date);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return taskDate < today;
+}

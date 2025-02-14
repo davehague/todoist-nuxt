@@ -5,6 +5,10 @@ import type { User } from "@/types/interfaces";
 import PersistentDataService from "@/services/PersistentDataService";
 import { googleLogout } from "vue3-google-login";
 import { supabase } from "@/utils/supabaseClient";
+// Add imports for other stores
+import { useTaskStore } from "./useTaskStore";
+import { useProjectStore } from "./useProjectStore";
+import { useSectionStore } from "./useSectionStore";
 
 export const useAuthStore = defineStore(
   "auth",
@@ -60,6 +64,15 @@ export const useAuthStore = defineStore(
         user.value = null;
         expirationTime.value = null;
         todoistToken.value = null;
+
+        // Reset other stores
+        const taskStore = useTaskStore();
+        const projectStore = useProjectStore();
+        const sectionStore = useSectionStore();
+
+        taskStore.$reset();
+        projectStore.$reset();
+        sectionStore.$reset();
       } catch (error) {
         console.error("Logout error:", error);
       }

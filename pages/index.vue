@@ -5,6 +5,11 @@
             <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
                 Today's Tasks
             </h1>
+            <button v-if="hasOverdueTasks" @click="handleRescheduleOverdue"
+                class="ml-2 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title="Reschedule all overdue tasks to today">
+                <ArrowPathIcon class="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            </button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="w-full">
@@ -27,10 +32,8 @@ import { copyTasksToClipboard } from "@/utils/copyTasks";
 import { type Task } from "@/types/interfaces";
 import { useSectionStore } from "@/stores/useSectionStore";
 import { useProjectStore } from "@/stores/useProjectStore";
-import { CalendarIcon } from "@heroicons/vue/24/outline";
+import { CalendarIcon, ArrowPathIcon } from "@heroicons/vue/24/outline";
 import { isToday } from "date-fns";
-import { SearchBar } from "@/components/SearchBar.vue";
-import { FilterBar } from "@/components/FilterBar.vue";
 
 const taskStore = useTaskStore();
 const selectedTask = ref<Task | null>(null);
@@ -45,6 +48,18 @@ const projectTasks = computed(() =>
 const nonProjectTasks = computed(() =>
     taskStore.sortedTasks.filter(task => task.project_name !== 'Projects')
 );
+
+const hasOverdueTasks = computed(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return taskStore.sortedTasks.some(task => {
+        if (!task.due?.date) return false;
+        // Parse YYYY-MM-DD format properly
+        const [year, month, day] = task.due.date.split('-').map(Number);
+        const taskDate = new Date(year, month - 1, day); // month is 0-based in JS
+        return taskDate < today;
+    });
+});
 
 // Update filteredTasks when search query changes
 watch(searchQuery, (query) => {
@@ -62,6 +77,16 @@ const clearSearch = () => {
 
 const handleCopy = async (event: MouseEvent, limit?: number) => {
     await copyTasksToClipboard(taskStore.sortedTasks, limit);
+};
+
+const handleRescheduleOverdue = async () => {
+    console.log('Rescheduling overdue tasks...');
+    try {
+        await taskStore.rescheduleOverdueTasks();
+    } catch (error) {
+        console.error('Failed to reschedule tasks:', error);
+        // You might want to add error handling UI feedback here
+    }
 };
 
 onMounted(async () => {

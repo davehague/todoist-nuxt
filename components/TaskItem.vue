@@ -26,11 +26,11 @@
             'text-red-600 dark:text-red-400 font-medium': taskStatus === 'overdue',
             'text-gray-500 dark:text-gray-400': taskStatus !== 'overdue'
           }">
-            Due: {{ new Date(task.due.date).toLocaleDateString() }}
+            Due: {{ formattedDueDate }}
             <span v-if="taskStatus === 'overdue'" class="ml-1">(Overdue)</span>
           </span>
           <span v-if="task.created_at" class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-            Created: {{ new Date(task.created_at).toLocaleDateString() }}
+            Created: {{ formattedCreatedDate }}
           </span>
         </div>
       </div>
@@ -42,12 +42,16 @@
 import type { Task } from "../types/interfaces";
 import { renderMarkdown } from "../utils/markdown";
 import { getTaskStatus, getPriorityIndicator } from "../utils/taskUtils";
+import { formatTaskDate } from "../utils/dateUtils";
 
 const props = defineProps<{
   task: Task;
 }>();
 
 const taskStatus = computed(() => getTaskStatus(props.task));
+
+const formattedDueDate = computed(() => formatTaskDate(props.task.due?.date));
+const formattedCreatedDate = computed(() => formatTaskDate(props.task.created_at));
 
 defineEmits<{
   (e: "click"): void;

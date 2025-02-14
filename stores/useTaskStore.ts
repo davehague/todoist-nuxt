@@ -210,5 +210,53 @@ export const useTaskStore = defineStore("tasks", {
     clearFilter() {
       this.filterFn = null;
     },
+
+    async rescheduleOverdueTasks() {
+      const { headers } = useApiHeaders();
+      const today = new Date().toISOString().split("T")[0];
+
+      const overdueTasks = this.tasks.filter(
+        (task) =>
+          task.due?.date &&
+          new Date(task.due.date).getTime() < new Date().setHours(0, 0, 0, 0)
+      );
+
+      try {
+        // Update local state immediately
+        overdueTasks.forEach((task) => {
+          const taskIndex = this.tasks.findIndex((t) => t.id === task.id);
+          if (taskIndex !== -1) {
+            this.tasks[taskIndex] = {
+              ...this.tasks[taskIndex],
+              due: { date: today, is_recurring: false, string: today },
+            };
+          }
+        });
+
+        // Also update filtered tasks
+        this.filteredTasks = [...this.tasks];
+
+        // Send updates to server
+        const updatePromises = overdueTasks.map((task) =>
+          fetch(`/api/todoist/tasks`, {
+            method: "PUT",
+            headers: headers as HeadersInit,
+            body: JSON.stringify({
+              id: task.id,
+              due_date: today,
+            }),
+          })
+        );
+
+        await Promise.all(updatePromises);
+        // Refresh from server to ensure consistency
+        await this.fetchTasks();
+      } catch (error) {
+        console.error("Error rescheduling tasks:", error);
+        // Refresh from server in case of error to ensure consistency
+        await this.fetchTasks();
+        throw error;
+      }
+    },
   },
 });

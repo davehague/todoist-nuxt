@@ -36,13 +36,13 @@
             <div>
               <h4 class="text-sm font-medium text-gray-700">Due Date</h4>
               <p class="text-sm text-gray-900">
-                {{ task.due?.date || "No due date" }}
+                {{ formatTaskDate(task.due?.date) || "No due date" }}
               </p>
             </div>
             <div>
               <h4 class="text-sm font-medium text-gray-700">Created</h4>
               <p class="text-sm text-gray-900">
-                {{ new Date(task.created_at).toLocaleDateString() }}
+                {{ formatTaskDate(task.created_at) }}
               </p>
             </div>
             <div>
@@ -72,6 +72,7 @@
 import { Dialog, DialogPanel } from "@headlessui/vue";
 import type { Task } from "../types/interfaces";
 import { renderMarkdown } from "../utils/markdown";
+import { formatTaskDate } from "../utils/dateUtils";
 
 const props = defineProps<{
   task: Task | null;

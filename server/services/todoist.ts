@@ -2,6 +2,7 @@ import { H3Event, createError, getHeader } from "h3";
 import { serverSupabase } from "../utils/serverSupabaseClient";
 import { decryptToken } from "@/utils/encryption";
 import { requireUserSession } from "../utils/auth";
+import { TodoistTaskUpdate } from "@/types/todoist";
 
 export class TodoistService {
   static async userBearerToken(event?: H3Event): Promise<string> {
@@ -95,5 +96,33 @@ export class TodoistService {
         message: error.message || "Failed to make Todoist API request",
       });
     }
+  }
+
+  static async updateTask(
+    taskId: string,
+    updateData: TodoistTaskUpdate,
+    event: H3Event
+  ) {
+    // Validate that only one due_* field is present
+    const dueFields = ["due_string", "due_date", "due_datetime"];
+    const presentDueFields = dueFields.filter((field) => field in updateData);
+    if (presentDueFields.length > 1) {
+      throw createError({
+        statusCode: 400,
+        message: "Only one due_* field can be used at a time",
+      });
+    }
+
+    return this.makeRequest(
+      `/rest/v2/tasks/${taskId}`,
+      {
+        method: "POST",
+        body: JSON.stringify(updateData),
+        headers: {
+          "X-Request-Id": crypto.randomUUID(),
+        },
+      },
+      event
+    );
   }
 }
