@@ -6,15 +6,22 @@
                 Today's Tasks
             </h1>
         </div>
-        <div class="w-full flex flex-col">
-            <TaskList :tasks="taskStore.sortedTasks" @select="selectedTask = $event" />
-            <TaskModal v-if="selectedTask" :task="selectedTask" @close="selectedTask = null" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="w-full">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Project Tasks</h2>
+                <TaskList :tasks="projectTasks" @select="selectedTask = $event" />
+            </div>
+            <div class="w-full">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Other Tasks</h2>
+                <TaskList :tasks="nonProjectTasks" @select="selectedTask = $event" />
+            </div>
         </div>
+        <TaskModal v-if="selectedTask" :task="selectedTask" @close="selectedTask = null" />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, onUnmounted } from "vue";
+import { ref, onMounted, watch, onUnmounted, computed } from "vue";
 import { useTaskStore } from "@/stores/useTaskStore";
 import { copyTasksToClipboard } from "@/utils/copyTasks";
 import { type Task } from "@/types/interfaces";
@@ -31,10 +38,23 @@ const searchQuery = ref("");
 const sectionStore = useSectionStore();
 const projectStore = useProjectStore();
 
+const projectTasks = computed(() =>
+    taskStore.sortedTasks.filter(task => task.project_name === 'Projects')
+);
+
+const nonProjectTasks = computed(() =>
+    taskStore.sortedTasks.filter(task => task.project_name !== 'Projects
+    ')
+    );
+
 // Update filteredTasks when search query changes
 watch(searchQuery, (query) => {
     taskStore.searchQuery = query;
     taskStore.handleSearch();
+});
+
+watch(selectedTask, (task) => {
+    console.log(task);
 });
 
 const clearSearch = () => {
