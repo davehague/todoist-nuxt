@@ -6,17 +6,19 @@
         <div class="flex items-center gap-4 mb-4">
           <button v-if="!task.is_completed" @click="handleTaskComplete"
             class="w-6 h-6 rounded-full border-2 border-gray-300 hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500 flex items-center justify-center"
-            :class="{ 'opacity-50': isLoading }">
-            <span v-if="isLoading" class="animate-spin">⌛</span>
+            :class="{ 'opacity-50': taskUpdater?.isUpdating }">
+            <span v-if="taskUpdater?.isUpdating" class="animate-spin">⌛</span>
           </button>
           <button v-else @click="handleTaskReopen"
             class="w-6 h-6 rounded-full bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 flex items-center justify-center text-white"
-            :class="{ 'opacity-50': isLoading }">
-            <span v-if="isLoading" class="animate-spin">⌛</span>
+            :class="{ 'opacity-50': taskUpdater?.isUpdating }">
+            <span v-if="taskUpdater?.isUpdating" class="animate-spin">⌛</span>
             <span v-else>✓</span>
           </button>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white" :class="{ 'line-through': task.is_completed }"
-            v-html="renderMarkdown(task.content)"></h2>
+          <input type="text" v-model="editedTask.content"
+            class="flex-1 text-lg font-semibold bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none dark:text-white"
+            :class="{ 'line-through': task.is_completed }" @blur="handleContentChange"
+            @keyup.enter="($event.target as HTMLInputElement).blur()">
         </div>
 
         <div class="space-y-4">
@@ -115,133 +117,167 @@
 </template>
 
 <script setup lang="ts">
-import { Dialog, DialogPanel } from "@headlessui/vue";
-import { ref, onMounted } from 'vue';
-import type { Task } from "../types/interfaces";
-import { renderMarkdown } from "../utils/markdown";
-import { formatTaskDate } from "../utils/dateUtils";
-import { useTaskStore } from '../stores/useTaskStore';
-import { useProjectStore } from '../stores/useProjectStore';
-import { storeToRefs } from 'pinia';
+// TaskModal.vue script section
+import { ref, onMounted } from 'vue'
+import { Dialog, DialogPanel } from '@headlessui/vue'
+import type { Task } from '../types/interfaces'
+import { renderMarkdown } from '../utils/markdown'
+import { formatTaskDate } from '../utils/dateUtils'
+import { useTaskUpdater } from '../composables/useTaskUpdater'
 
 const props = defineProps<{
-  task: Task | null;
-}>();
+  task: Task | null
+}>()
 
 const emit = defineEmits<{
-  (e: "close"): void;
-}>();
+  (e: 'close'): void
+}>()
 
-const taskStore = useTaskStore();
-const projectStore = useProjectStore();
-const { projects } = storeToRefs(projectStore);
-
+// Local state for form fields
 const editedTask = ref({
   priority: 4,
   due_date: '',
-});
+  content: ''
+})
 
-const isLoading = ref(false);
-const showDeleteConfirm = ref(false);
-const isDeleting = ref(false);
+// Delete confirmation state
+const showDeleteConfirm = ref(false)
+const isDeleting = ref(false)
 
+// Task update composable
+const taskUpdater = ref<ReturnType<typeof useTaskUpdater> | null>(null)
+
+// Initialize form with task data
 onMounted(() => {
   if (props.task) {
     editedTask.value = {
       priority: props.task.priority,
       due_date: props.task.due?.date || '',
-    };
+      content: props.task.content
+    }
+    taskUpdater.value = useTaskUpdater(props.task)
   }
-});
+})
 
-async function handlePriorityChange() {
-  if (!props.task) return;
+// Content update handler
+async function handleContentChange() {
+  if (!props.task || !taskUpdater.value) return
   try {
-    await taskStore.updateTask(props.task.id, {
-      priority: editedTask.value.priority,
-    });
+    await taskUpdater.value.updateContent(editedTask.value.content)
   } catch (error) {
-    console.error('Failed to update priority:', error);
+    console.error('Failed to update content:', error)
+    // Revert on error
+    editedTask.value.content = props.task.content
   }
 }
 
-async function handleDueDateChange() {
-  if (!props.task) return;
+// Priority update handler
+async function handlePriorityChange() {
+  if (!props.task || !taskUpdater.value) return
   try {
-    if (!editedTask.value.due_date) {
-      await taskStore.updateTask(props.task.id, { due: undefined });
-    } else {
-      await taskStore.updateTask(props.task.id, {
-        due: {
-          date: editedTask.value.due_date,
-          is_recurring: false,
-          string: editedTask.value.due_date
-        },
-      });
-    }
+    await taskUpdater.value.updatePriority(editedTask.value.priority)
   } catch (error) {
-    console.error('Failed to update due date:', error);
+    console.error('Failed to update priority:', error)
+    // Revert on error
+    editedTask.value.priority = props.task.priority
+  }
+}
+
+// Due date handlers
+async function handleDueDateChange() {
+  if (!props.task || !taskUpdater.value) return
+  try {
+    await taskUpdater.value.updateDueDate(editedTask.value.due_date || null)
+  } catch (error) {
+    console.error('Failed to update due date:', error)
+    // Revert on error
+    editedTask.value.due_date = props.task.due?.date || ''
   }
 }
 
 async function clearDueDate() {
-  if (!props.task) return;
+  if (!props.task || !taskUpdater.value) return
   try {
-    editedTask.value.due_date = '';
-    await taskStore.updateTask(props.task.id, { due: undefined });
+    editedTask.value.due_date = ''
+    await taskUpdater.value.updateDueDate(null)
   } catch (error) {
-    console.error('Failed to clear due date:', error);
+    console.error('Failed to clear due date:', error)
+    // Revert on error
+    editedTask.value.due_date = props.task.due?.date || ''
   }
 }
 
+// Task completion handlers
 async function handleTaskComplete() {
-  if (!props.task || isLoading.value) return;
+  if (!props.task || taskUpdater.value?.isUpdating) return
 
   try {
-    isLoading.value = true;
-    await taskStore.completeTask(props.task.id);
+    await taskUpdater.value?.commitUpdates() // Commit any pending changes first
+    await useTaskStore().completeTask(props.task.id)
     if (props.task) {
-      props.task.is_completed = true;
+      props.task.is_completed = true
     }
   } catch (error) {
-    console.error('Failed to complete task:', error);
-  } finally {
-    isLoading.value = false;
+    console.error('Failed to complete task:', error)
   }
 }
 
 async function handleTaskReopen() {
-  if (!props.task || isLoading.value) return;
+  if (!props.task || taskUpdater.value?.isUpdating) return
 
   try {
-    isLoading.value = true;
-    await taskStore.reopenTask(props.task.id);
+    await taskUpdater.value?.commitUpdates() // Commit any pending changes first
+    await useTaskStore().reopenTask(props.task.id)
     if (props.task) {
-      props.task.is_completed = false;
+      props.task.is_completed = false
     }
   } catch (error) {
-    console.error('Failed to reopen task:', error);
-  } finally {
-    isLoading.value = false;
+    console.error('Failed to reopen task:', error)
   }
 }
 
+// Delete handlers
 function confirmDelete() {
-  showDeleteConfirm.value = true;
+  showDeleteConfirm.value = true
 }
 
 async function handleDelete() {
-  if (!props.task || isDeleting.value) return;
+  if (!props.task || isDeleting.value) return
 
   try {
-    isDeleting.value = true;
-    await taskStore.deleteTask(props.task.id);
-    showDeleteConfirm.value = false;
-    emit('close');
+    isDeleting.value = true
+    await useTaskStore().deleteTask(props.task.id)
+    showDeleteConfirm.value = false
+    emit('close')
   } catch (error) {
-    console.error('Failed to delete task:', error);
+    console.error('Failed to delete task:', error)
   } finally {
-    isDeleting.value = false;
+    isDeleting.value = false
   }
 }
+
+// Modal close handler
+async function handleClose() {
+  if (taskUpdater.value) {
+    try {
+      await taskUpdater.value.commitUpdates() // Commit any pending changes
+    } catch (error) {
+      console.error('Failed to save changes:', error)
+      // Could add error handling UI here
+    }
+  }
+  emit('close')
+}
+
+// Watch for external task changes
+watch(() => props.task, (newTask) => {
+  if (newTask) {
+    editedTask.value = {
+      priority: newTask.priority,
+      due_date: newTask.due?.date || '',
+      content: newTask.content
+    }
+    taskUpdater.value = useTaskUpdater(newTask)
+  }
+})
 </script>

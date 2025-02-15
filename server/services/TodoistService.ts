@@ -107,6 +107,7 @@ export class TodoistService {
     updateData: TodoistTaskUpdate,
     event: H3Event
   ) {
+    console.log("TODOIST SERVICE: updateTask", taskId, updateData);
     return this.makeRequest(
       `/rest/v2/tasks/${taskId}`,
       {
