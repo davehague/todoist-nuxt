@@ -25,7 +25,8 @@
                 v-html="formattedSummaryPreview">
             </div>
             <transition name="fade">
-                <div v-if="isExpanded" class="markdown-content" v-html="formattedSummary"></div>
+                <div v-if="isExpanded" class="markdown-content text-gray-600 dark:text-gray-300"
+                    v-html="formattedSummary"></div>
             </transition>
         </div>
         <div v-else class="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
