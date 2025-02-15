@@ -22,6 +22,7 @@ export default defineNuxtConfig({
       googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID,
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL,
       supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY,
+      openrouterModel: process.env.NUXT_PUBLIC_OPENROUTER_SUMMARY_MODEL,
     },
   },
   supabase: {

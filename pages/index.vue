@@ -11,6 +11,15 @@
                 <ArrowPathIcon class="h-5 w-5 text-gray-600 dark:text-gray-400" />
             </button>
         </div>
+
+        <!-- Task Summary -->
+        <div v-if="!isLoading" class="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+            <p class="text-gray-700 dark:text-gray-300">{{ summary }}</p>
+        </div>
+        <div v-else class="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+            <p class="text-gray-500">Generating task summary...</p>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="w-full">
                 <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Project Tasks</h2>
@@ -34,12 +43,20 @@ import { useSectionStore } from "@/stores/useSectionStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { CalendarIcon, ArrowPathIcon } from "@heroicons/vue/24/outline";
 import { isToday } from "date-fns";
+import { useTaskSummary } from '@/composables/useTaskSummary';
 
 const taskStore = useTaskStore();
 const selectedTask = ref<Task | null>(null);
 const searchQuery = ref("");
 const sectionStore = useSectionStore();
 const projectStore = useProjectStore();
+const { isLoading, summary, generateSummary } = useTaskSummary();
+
+const taskSummary = {
+    isLoading,
+    summary,
+    generateSummary
+};
 
 const projectTasks = computed(() =>
     taskStore.sortedTasks.filter(task => task.project_name === 'Projects')
@@ -88,6 +105,19 @@ const handleRescheduleOverdue = async () => {
         // You might want to add error handling UI feedback here
     }
 };
+
+// Watch for changes in tasks and regenerate summary
+watch([projectTasks, nonProjectTasks], async ([newProjectTasks, newNonProjectTasks], [oldProjectTasks, oldNonProjectTasks]) => {
+    if (!newProjectTasks?.length && !newNonProjectTasks?.length) return;
+
+    // Only generate summary on initial load or when tasks actually change
+    const isInitialLoad = !oldProjectTasks && !oldNonProjectTasks;
+    await taskSummary.generateSummary(
+        newProjectTasks,
+        newNonProjectTasks,
+        isInitialLoad
+    );
+}, { immediate: true });
 
 onMounted(async () => {
     if (!sectionStore.isLoaded) {
