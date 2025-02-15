@@ -103,16 +103,6 @@ export class TodoistService {
     updateData: TodoistTaskUpdate,
     event: H3Event
   ) {
-    // Validate that only one due_* field is present
-    const dueFields = ["due_string", "due_date", "due_datetime"];
-    const presentDueFields = dueFields.filter((field) => field in updateData);
-    if (presentDueFields.length > 1) {
-      throw createError({
-        statusCode: 400,
-        message: "Only one due_* field can be used at a time",
-      });
-    }
-
     return this.makeRequest(
       `/rest/v2/tasks/${taskId}`,
       {

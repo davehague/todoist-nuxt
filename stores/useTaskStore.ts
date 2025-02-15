@@ -258,5 +258,56 @@ export const useTaskStore = defineStore("tasks", {
         throw error;
       }
     },
+
+    async updateTask(taskId: string, updates: Partial<Task>) {
+      const { headers } = useApiHeaders();
+      try {
+        const apiUpdates: Record<string, any> = {};
+
+        // Handle priority
+        if (updates.hasOwnProperty("priority")) {
+          apiUpdates.priority = Number(updates.priority);
+        }
+
+        // Handle due date - simplified to only use due_date
+        if (updates.hasOwnProperty("due")) {
+          apiUpdates.due_date = updates.due?.date || null;
+        }
+
+        const response = await fetch(`/api/todoist/tasks`, {
+          method: "PUT",
+          headers: headers as HeadersInit,
+          body: JSON.stringify({
+            id: taskId,
+            ...apiUpdates,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          throw new Error(errorData?.message || "Failed to update task");
+        }
+
+        // Update local state
+        const taskIndex = this.tasks.findIndex((t) => t.id === taskId);
+        if (taskIndex !== -1) {
+          this.tasks[taskIndex] = { ...this.tasks[taskIndex], ...updates };
+          const filteredIndex = this.filteredTasks.findIndex(
+            (t) => t.id === taskId
+          );
+          if (filteredIndex !== -1) {
+            this.filteredTasks[filteredIndex] = {
+              ...this.filteredTasks[filteredIndex],
+              ...updates,
+            };
+          }
+        }
+
+        return true;
+      } catch (error) {
+        console.error("Error updating task:", error);
+        throw error;
+      }
+    },
   },
 });

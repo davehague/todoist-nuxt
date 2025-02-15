@@ -2,7 +2,7 @@ export interface TodoistTaskUpdate {
   content?: string;
   description?: string;
   labels?: string[];
-  priority?: 1 | 2 | 3 | 4;
+  priority?: number;
   due_string?: string;
   due_date?: string;
   due_datetime?: string;

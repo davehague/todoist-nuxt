@@ -3,7 +3,7 @@ import { TodoistTaskUpdate } from "@/types/todoist";
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
-  const { id, ...updateData } = body;
+  const { id, due, priority, ...restData } = body;
 
   if (!id) {
     throw createError({
@@ -12,6 +12,21 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  const updateData: TodoistTaskUpdate = { ...restData };
+
+  // Handle priority update
+  if (typeof priority !== "undefined") {
+    updateData.priority = Number(priority);
+  }
+
+  // Handle due date updates - only using due_date
+  if (due === undefined || due === null) {
+    updateData.due_date = undefined;
+  } else if (due?.date) {
+    updateData.due_date = due.date;
+  }
+
+  // Validate duration if present
   if (updateData.duration && !updateData.duration_unit) {
     throw createError({
       statusCode: 400,
@@ -33,5 +48,5 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  return TodoistService.updateTask(id, updateData as TodoistTaskUpdate, event);
+  return TodoistService.updateTask(id, updateData, event);
 });
