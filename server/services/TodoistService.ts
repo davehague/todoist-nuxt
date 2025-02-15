@@ -145,4 +145,17 @@ export class TodoistService {
       event
     );
   }
+
+  static async deleteTask(taskId: string, event: H3Event) {
+    return this.makeRequest(
+      `/rest/v2/tasks/${taskId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "X-Request-Id": crypto.randomUUID(),
+        },
+      },
+      event
+    );
+  }
 }

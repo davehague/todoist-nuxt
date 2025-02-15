@@ -359,5 +359,28 @@ export const useTaskStore = defineStore("tasks", {
         throw error;
       }
     },
+
+    async deleteTask(taskId: string) {
+      const { headers } = useApiHeaders();
+      try {
+        const response = await fetch(`/api/todoist/tasks/${taskId}/delete`, {
+          method: "DELETE",
+          headers: headers as HeadersInit,
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to delete task");
+        }
+
+        // Remove task from local state
+        this.tasks = this.tasks.filter((t) => t.id !== taskId);
+        this.filteredTasks = this.filteredTasks.filter((t) => t.id !== taskId);
+
+        return true;
+      } catch (error) {
+        console.error("Error deleting task:", error);
+        throw error;
+      }
+    },
   },
 });

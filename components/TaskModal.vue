@@ -78,6 +78,40 @@
               Open in Todoist
             </a>
           </div>
+          <div class="mt-6 flex justify-between items-center">
+            <a :href="task.url" target="_blank" rel="noopener noreferrer"
+              class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+              Open in Todoist
+            </a>
+            <button @click="confirmDelete"
+              class="px-3 py-1 text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:underline">
+              Delete Task
+            </button>
+          </div>
+        </div>
+      </DialogPanel>
+    </div>
+  </Dialog>
+
+  <!-- Delete Confirmation Dialog -->
+  <Dialog :open="showDeleteConfirm" @close="showDeleteConfirm = false" class="relative z-50">
+    <div class="fixed inset-0 bg-black/50" aria-hidden="true" />
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+      <DialogPanel class="mx-auto max-w-sm rounded-lg bg-white dark:bg-gray-800 p-6 shadow-xl">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Delete Task?</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          Are you sure you want to delete this task? This action cannot be undone.
+        </p>
+        <div class="flex justify-end gap-3">
+          <button @click="showDeleteConfirm = false"
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+            Cancel
+          </button>
+          <button @click="handleDelete"
+            class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+            :class="{ 'opacity-50 cursor-not-allowed': isDeleting }">
+            {{ isDeleting ? 'Deleting...' : 'Delete' }}
+          </button>
         </div>
       </DialogPanel>
     </div>
@@ -112,6 +146,8 @@ const editedTask = ref({
 });
 
 const isLoading = ref(false);
+const showDeleteConfirm = ref(false);
+const isDeleting = ref(false);
 
 onMounted(() => {
   if (props.task) {
@@ -191,6 +227,25 @@ async function handleTaskReopen() {
     console.error('Failed to reopen task:', error);
   } finally {
     isLoading.value = false;
+  }
+}
+
+function confirmDelete() {
+  showDeleteConfirm.value = true;
+}
+
+async function handleDelete() {
+  if (!props.task || isDeleting.value) return;
+
+  try {
+    isDeleting.value = true;
+    await taskStore.deleteTask(props.task.id);
+    showDeleteConfirm.value = false;
+    emit('close');
+  } catch (error) {
+    console.error('Failed to delete task:', error);
+  } finally {
+    isDeleting.value = false;
   }
 }
 </script>
