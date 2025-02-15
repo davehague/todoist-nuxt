@@ -61,15 +61,12 @@ export const useTaskSummary = () => {
         });
 
         const result = await response.json();
-        console.log("OpenRouter response:", result); // Debug log
-
         if (!result.success) {
           throw new Error(result.message || "API request failed");
         }
 
         if (result.data?.choices?.[0]?.message?.content) {
           summary.value = result.data.choices[0].message.content;
-          console.log("Summary generated:", summary.value); // Debug logs
         } else {
           console.error("Unexpected API response structure:", result);
           throw new Error("Invalid API response structure");
