@@ -51,13 +51,13 @@ export const useTaskSummary = () => {
             messages: [
               {
                 role: "system",
-                content: `Only perform the action the user specifies.  Do not add a greeting, preface, or summary of your work.
+                content: `You are a pragrmatic no-nonsense planner. Only perform the action the user specifies.  Do not add a greeting, preface, or summary of your work.
                 The priority integers you will be given map like this: 4 = high priority, 3 = medium, 2 = low, and 1 = no priority
                 `,
               },
               {
                 role: "user",
-                content: `The following is a list of tasks that the user thinks the can do 
+                content: `Look at the following list of tasks that the user thinks the can do 
                 today. Give your analysis of whether or not these can be done in a normal day.   
                 Then, suggest a plan of action for (1) quick wins (2) Next priority tasks (3) the rest.
                 Do not provide any additional commentary.

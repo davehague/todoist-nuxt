@@ -14,7 +14,19 @@
 
         <!-- Task Summary -->
         <div v-if="!isLoading" class="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-            <div class="markdown-content" v-html="formattedSummary"></div>
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Summary</h3>
+                <button @click="isExpanded = !isExpanded"
+                    class="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+                    {{ isExpanded ? 'Show Less' : 'Show More' }}
+                </button>
+            </div>
+            <div v-if="!isExpanded" class="markdown-content text-gray-600 dark:text-gray-400"
+                v-html="formattedSummaryPreview">
+            </div>
+            <transition name="fade">
+                <div v-if="isExpanded" class="markdown-content" v-html="formattedSummary"></div>
+            </transition>
         </div>
         <div v-else class="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
             <p class="text-gray-500">Generating task summary...</p>
@@ -66,6 +78,19 @@ const formattedSummary = computed(() => {
     if (!summary.value) return ''
     return marked.parse(summary.value)
 })
+
+const isExpanded = ref(false);
+
+const formattedSummaryPreview = computed(() => {
+    if (!summary.value) return '';
+    const firstLine = summary.value.split('\n')[0];
+    const preview = firstLine + (summary.value.length > 100 ? '...' : '');
+    return marked.parse(preview);
+});
+
+watch(summary, (newSummary) => {
+    console.log(newSummary);
+});
 
 const projectTasks = computed(() =>
     taskStore.sortedTasks.filter(task => task.project_name === 'Projects')
@@ -169,5 +194,15 @@ onUnmounted(() => {
 <style>
 .markdown-content :deep(p:only-child) {
     margin: 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
 }
 </style>
