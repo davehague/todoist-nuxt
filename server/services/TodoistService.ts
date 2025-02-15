@@ -87,8 +87,12 @@ export class TodoistService {
         });
       }
 
-      const responseData = await response.json();
-      return responseData;
+      // Return true for 204 responses, otherwise parse JSON
+      if (response.status === 204) {
+        return true;
+      }
+
+      return await response.json();
     } catch (error: any) {
       console.error("Todoist API error:", error);
       throw createError({
@@ -108,6 +112,32 @@ export class TodoistService {
       {
         method: "POST",
         body: JSON.stringify(updateData),
+        headers: {
+          "X-Request-Id": crypto.randomUUID(),
+        },
+      },
+      event
+    );
+  }
+
+  static async closeTask(taskId: string, event: H3Event) {
+    return this.makeRequest(
+      `/rest/v2/tasks/${taskId}/close`,
+      {
+        method: "POST",
+        headers: {
+          "X-Request-Id": crypto.randomUUID(),
+        },
+      },
+      event
+    );
+  }
+
+  static async reopenTask(taskId: string, event: H3Event) {
+    return this.makeRequest(
+      `/rest/v2/tasks/${taskId}/reopen`,
+      {
+        method: "POST",
         headers: {
           "X-Request-Id": crypto.randomUUID(),
         },

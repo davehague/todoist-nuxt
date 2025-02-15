@@ -1,4 +1,4 @@
-import { TodoistService } from "@/server/services/todoist";
+import { TodoistService } from "~/server/services/TodoistService";
 import { TodoistTaskUpdate } from "@/types/todoist";
 
 export default defineEventHandler(async (event) => {
@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
 
   // Handle due date updates - only using due_date
   if (due === undefined || due === null) {
-    updateData.due_date = undefined;
+    updateData.due_string = "no date";
   } else if (due?.date) {
     updateData.due_date = due.date;
   }

@@ -3,7 +3,21 @@
     <div class="fixed inset-0 bg-black/30 dark:bg-black/50" aria-hidden="true" />
     <div class="fixed inset-0 flex items-center justify-center p-4">
       <DialogPanel v-if="task" class="mx-auto max-w-2xl w-full rounded-lg bg-white dark:bg-gray-800 p-6 shadow-xl">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4" v-html="renderMarkdown(task.content)"></h2>
+        <div class="flex items-center gap-4 mb-4">
+          <button v-if="!task.is_completed" @click="handleTaskComplete"
+            class="w-6 h-6 rounded-full border-2 border-gray-300 hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500 flex items-center justify-center"
+            :class="{ 'opacity-50': isLoading }">
+            <span v-if="isLoading" class="animate-spin">⌛</span>
+          </button>
+          <button v-else @click="handleTaskReopen"
+            class="w-6 h-6 rounded-full bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 flex items-center justify-center text-white"
+            :class="{ 'opacity-50': isLoading }">
+            <span v-if="isLoading" class="animate-spin">⌛</span>
+            <span v-else>✓</span>
+          </button>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white" :class="{ 'line-through': task.is_completed }"
+            v-html="renderMarkdown(task.content)"></h2>
+        </div>
 
         <div class="space-y-4">
           <div>
@@ -97,6 +111,8 @@ const editedTask = ref({
   due_date: '',
 });
 
+const isLoading = ref(false);
+
 onMounted(() => {
   if (props.task) {
     editedTask.value = {
@@ -143,6 +159,38 @@ async function clearDueDate() {
     await taskStore.updateTask(props.task.id, { due: undefined });
   } catch (error) {
     console.error('Failed to clear due date:', error);
+  }
+}
+
+async function handleTaskComplete() {
+  if (!props.task || isLoading.value) return;
+
+  try {
+    isLoading.value = true;
+    await taskStore.completeTask(props.task.id);
+    if (props.task) {
+      props.task.is_completed = true;
+    }
+  } catch (error) {
+    console.error('Failed to complete task:', error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+async function handleTaskReopen() {
+  if (!props.task || isLoading.value) return;
+
+  try {
+    isLoading.value = true;
+    await taskStore.reopenTask(props.task.id);
+    if (props.task) {
+      props.task.is_completed = false;
+    }
+  } catch (error) {
+    console.error('Failed to reopen task:', error);
+  } finally {
+    isLoading.value = false;
   }
 }
 </script>

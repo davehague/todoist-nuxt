@@ -309,5 +309,55 @@ export const useTaskStore = defineStore("tasks", {
         throw error;
       }
     },
+
+    async completeTask(taskId: string) {
+      const { headers } = useApiHeaders();
+      try {
+        const response = await fetch(`/api/todoist/tasks/${taskId}/close`, {
+          method: "POST",
+          headers: headers as HeadersInit,
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to complete task");
+        }
+
+        // Remove task from local state
+        this.tasks = this.tasks.filter((t) => t.id !== taskId);
+        this.filteredTasks = this.filteredTasks.filter((t) => t.id !== taskId);
+
+        // Optionally fetch completed tasks if you're tracking them
+        await this.fetchCompletedTasks();
+
+        return true;
+      } catch (error) {
+        console.error("Error completing task:", error);
+        throw error;
+      }
+    },
+
+    async reopenTask(taskId: string) {
+      const { headers } = useApiHeaders();
+      try {
+        const response = await fetch(`/api/todoist/tasks/${taskId}/reopen`, {
+          method: "POST",
+          headers: headers as HeadersInit,
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to reopen task");
+        }
+
+        // Refresh tasks to get the reopened task
+        await this.fetchTasks();
+        // Refresh completed tasks to remove the reopened task
+        await this.fetchCompletedTasks();
+
+        return true;
+      } catch (error) {
+        console.error("Error reopening task:", error);
+        throw error;
+      }
+    },
   },
 });
