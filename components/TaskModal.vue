@@ -73,10 +73,6 @@
 
           <div>
             <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">URL</h4>
-            <a :href="task.url" target="_blank" rel="noopener noreferrer"
-              class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-              Open in Todoist
-            </a>
           </div>
           <div class="mt-6 flex justify-between items-center">
             <a :href="task.url" target="_blank" rel="noopener noreferrer"

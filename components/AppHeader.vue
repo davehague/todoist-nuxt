@@ -83,7 +83,7 @@
                   :class="{
                     'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-medium':
                       $route.path === '/active',
-                    'text-gray-700 dark:text-gray-300': $route.path !== '/',
+                    'text-gray-700 dark:text-gray-300': $route.path !== '/active',
                   }">
                   Active Tasks
                 </RouterLink>

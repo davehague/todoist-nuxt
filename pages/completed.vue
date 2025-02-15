@@ -8,19 +8,12 @@
     </div>
     <div>
       <div class="mb-6 flex flex-col gap-4">
-        <SearchBar
-          v-model="searchQuery"
-          :total-tasks="taskStore.completedTasks.length"
-          @clear="clearSearch"
-          @copy="handleCopy"
-        />
+        <SearchBar v-model="searchQuery" :total-tasks="taskStore.completedTasks.length" @clear="clearSearch"
+          @copy="handleCopy" />
 
         <div class="flex justify-between items-center">
-          <input
-            type="date"
-            v-model="selectedDate"
-            class="px-4 py-2 border rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-          />
+          <input type="date" v-model="selectedDate"
+            class="px-4 py-2 border rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white" />
           <div class="text-lg text-orange-500">
             {{ displayedTasks.length }} task{{
               displayedTasks.length !== 1 ? "s" : ""
@@ -34,32 +27,19 @@
         Loading tasks...
       </div>
 
-      <div
-        v-else-if="error"
-        class="text-red-500 p-4 bg-red-50 dark:bg-red-900/50 rounded-lg"
-      >
+      <div v-else-if="error" class="text-red-500 p-4 bg-red-50 dark:bg-red-900/50 rounded-lg">
         {{ error }}
       </div>
 
       <div v-else>
-        <div
-          v-if="displayedTasks.length === 0"
-          class="text-gray-500 dark:text-gray-400 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
-        >
+        <div v-if="displayedTasks.length === 0"
+          class="text-gray-500 dark:text-gray-400 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
           No tasks found
         </div>
 
-        <TaskList
-          v-else
-          :tasks="displayedTasks"
-          @select="selectedTask = $event"
-        />
+        <TaskList v-else :tasks="displayedTasks" @select="selectedTask = $event" />
 
-        <TaskModal
-          v-if="selectedTask"
-          :task="selectedTask"
-          @close="selectedTask = null"
-        />
+        <TaskModal v-if="selectedTask" :task="selectedTask" @close="selectedTask = null" />
       </div>
     </div>
   </div>
@@ -68,6 +48,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from "vue";
 import { parseISO } from "date-fns";
+import { getTodayDateString } from "@/utils/dateUtils";
 import { CheckCircleIcon } from "@heroicons/vue/24/outline";
 import { useTaskStore } from "@/stores/useTaskStore";
 import { useProjectStore } from "@/stores/useProjectStore";
@@ -82,7 +63,7 @@ const taskStore = useTaskStore();
 const projectStore = useProjectStore();
 const sectionStore = useSectionStore();
 
-const selectedDate = ref(new Date().toISOString().split("T")[0]);
+const selectedDate = ref(getTodayDateString());
 const error = ref<string | null>(null);
 const selectedTask = ref<Task | null>(null);
 const searchQuery = ref("");
