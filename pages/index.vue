@@ -14,7 +14,7 @@
 
         <!-- Task Summary -->
         <div v-if="!isLoading" class="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-            <p class="text-gray-700 dark:text-gray-300">{{ summary }}</p>
+            <div class="markdown-content" v-html="formattedSummary"></div>
         </div>
         <div v-else class="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
             <p class="text-gray-500">Generating task summary...</p>
@@ -45,6 +45,10 @@ import { CalendarIcon, ArrowPathIcon } from "@heroicons/vue/24/outline";
 import { isToday } from "date-fns";
 import { useTaskSummary } from '@/composables/useTaskSummary';
 
+import { marked } from 'marked';
+import '@/assets/css/marked.css'
+import { id } from "date-fns/locale";
+
 const taskStore = useTaskStore();
 const selectedTask = ref<Task | null>(null);
 const searchQuery = ref("");
@@ -57,6 +61,11 @@ const taskSummary = {
     summary,
     generateSummary
 };
+
+const formattedSummary = computed(() => {
+    if (!summary.value) return ''
+    return marked.parse(summary.value)
+})
 
 const projectTasks = computed(() =>
     taskStore.sortedTasks.filter(task => task.project_name === 'Projects')
@@ -110,11 +119,23 @@ const handleRescheduleOverdue = async () => {
 watch([projectTasks, nonProjectTasks], async ([newProjectTasks, newNonProjectTasks], [oldProjectTasks, oldNonProjectTasks]) => {
     if (!newProjectTasks?.length && !newNonProjectTasks?.length) return;
 
+    // Map tasks to only include content and priority
+    const simplifiedProjectTasks = newProjectTasks.map(task => ({
+        id: task.id,
+        content: task.content,
+        priority: task.priority
+    }));
+    const simplifiedNonProjectTasks = newNonProjectTasks.map(task => ({
+        id: task.id,
+        content: task.content,
+        priority: task.priority
+    }));
+
     // Only generate summary on initial load or when tasks actually change
     const isInitialLoad = !oldProjectTasks && !oldNonProjectTasks;
     await taskSummary.generateSummary(
-        newProjectTasks,
-        newNonProjectTasks,
+        simplifiedProjectTasks,
+        simplifiedNonProjectTasks,
         isInitialLoad
     );
 }, { immediate: true });
@@ -144,3 +165,9 @@ onUnmounted(() => {
     taskStore.clearFilter();
 });
 </script>
+
+<style>
+.markdown-content :deep(p:only-child) {
+    margin: 0;
+}
+</style>

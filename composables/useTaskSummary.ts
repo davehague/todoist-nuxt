@@ -7,16 +7,16 @@ export const useTaskSummary = () => {
   let debounceTimer: NodeJS.Timeout;
   let lastTasksHash = ""; // Track last processed tasks
 
-  const generateTasksHash = (projectTasks: Task[], nonProjectTasks: Task[]) => {
+  const generateTasksHash = (projectTasks: any, nonProjectTasks: any) => {
     return JSON.stringify([
-      projectTasks.map((t) => t.id),
-      nonProjectTasks.map((t) => t.id),
+      projectTasks.map((t: { id: any }) => t.id),
+      nonProjectTasks.map((t: { id: any }) => t.id),
     ]);
   };
 
   const generateSummary = async (
-    projectTasks: Task[],
-    nonProjectTasks: Task[],
+    projectTasks: any[],
+    nonProjectTasks: any[],
     immediate = false
   ) => {
     // Clear any pending debounce timer
@@ -32,6 +32,14 @@ export const useTaskSummary = () => {
       isLoading.value = true;
       lastTasksHash = currentHash;
 
+      // Create simplified versions without IDs for the AI prompt
+      const simplifiedProjectTasks = projectTasks.map(
+        ({ id, ...rest }) => rest
+      );
+      const simplifiedNonProjectTasks = nonProjectTasks.map(
+        ({ id, ...rest }) => rest
+      );
+
       try {
         const response = await fetch("/api/openrouter", {
           method: "POST",
@@ -43,20 +51,21 @@ export const useTaskSummary = () => {
             messages: [
               {
                 role: "system",
-                content:
-                  "Only perform the action the user specifies.  Do not add a greeting, preface, or summary of your work. Use only plain text in your responses.",
+                content: `Only perform the action the user specifies.  Do not add a greeting, preface, or summary of your work.
+                The priority integers you will be given map like this: 4 = high priority, 3 = medium, 2 = low, and 1 = no priority
+                `,
               },
               {
                 role: "user",
-                content: `You are an assistant with a critical eye toward whether or not a user 
-                can achieve what they've set out to do in a given day.  The following is a list of tasks that the user thinks the can do 
-                today. Give your analysis of whether or not these can be done in a normal day.   Speak directly to the user
-                in your response.  Be kind but firm.
-                  Project tasks: ${JSON.stringify(projectTasks)}. 
-                  Other tasks: ${JSON.stringify(nonProjectTasks)}`,
+                content: `The following is a list of tasks that the user thinks the can do 
+                today. Give your analysis of whether or not these can be done in a normal day.   
+                Then, suggest a plan of action for (1) quick wins (2) Next priority tasks (3) the rest.
+                Do not provide any additional commentary.
+                  Project tasks: ${JSON.stringify(simplifiedProjectTasks)}. 
+                  Other tasks: ${JSON.stringify(simplifiedNonProjectTasks)}`,
               },
             ],
-            max_tokens: 250,
+            max_tokens: 4096,
           }),
         });
 
